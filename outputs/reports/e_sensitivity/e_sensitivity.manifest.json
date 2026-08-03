@@ -1,0 +1,27 @@
+{
+  "experiment_set": [
+    "E1_slope_cap",
+    "E3_weather_coefficients",
+    "E6_k_nearest_destinations"
+  ],
+  "run_timestamp": "2026-06-10T16:57:45.688944+00:00",
+  "code_version_id": "workspace",
+  "effect_output_label": "baseline_definition_sensitivity",
+  "counterfactual_effect_claim_allowed": false,
+  "path_research_run": true,
+  "path_research_method": "multi_source_dijkstra_path_length per variant; E6 uses per-origin single_source_dijkstra_path_length with expanding cutoff",
+  "weather_intensity": 2.0,
+  "renormalization": "per-variant Min-Max + top 20% threshold (baseline definition sensitivity)",
+  "config_hash": "899cbade86165d9902a440676d29673baee1017ace5deebde2f74cc34b368fca",
+  "input_paths": [
+    "data/derived/hex_vulnerability_final.parquet",
+    "data/interim/walking_edge_costs.parquet",
+    "data/walking_network_nodes_with_elevation.csv",
+    "qgis/out_transit_d_candidates.gpkg"
+  ],
+  "output_paths": [
+    "outputs\\reports\\e_sensitivity\\e_sensitivity_metrics.csv",
+    "outputs\\reports\\e_sensitivity\\e6_k_nearest_costs.csv",
+    "outputs\\reports\\e_sensitivity\\e_sensitivity_summary.json"
+  ]
+}

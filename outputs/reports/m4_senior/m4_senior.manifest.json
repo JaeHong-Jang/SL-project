@@ -1,0 +1,57 @@
+{
+  "model_id": "M4_senior_v1",
+  "run_timestamp": "2026-06-10T17:11:56.950302+00:00",
+  "code_version_id": "workspace",
+  "effect_output_label": "senior_profile_sensitivity",
+  "counterfactual_effect_claim_allowed": false,
+  "cost_unit": "minutes",
+  "cost_formula": "length_m / (flat_speed*60) * max(1, exp(3.5*(|s+0.05|-0.05))) * (1 + beta_weather*intensity) * step_factor",
+  "parameters": {
+    "speed_profiles_m_per_s": {
+      "very_slow": 0.7,
+      "slow": 0.8,
+      "base": 0.9,
+      "optimistic": 1.07
+    },
+    "slope_cap_percent": 30.0,
+    "tobler_scale": 3.5,
+    "tobler_offset": 0.05,
+    "step_penalty_factor": 3.0,
+    "weather_profiles": {
+      "dry": {
+        "beta_weather": 0.0,
+        "intensity": 0.0
+      },
+      "rain": {
+        "beta_weather": 0.03,
+        "intensity": 2.0
+      },
+      "snow": {
+        "beta_weather": 0.03,
+        "intensity": 8.0
+      }
+    },
+    "parameter_status": "profile scenario parameters, not calibrated coefficients"
+  },
+  "path_research_run": true,
+  "path_research_method": "networkx multi_source_dijkstra_path_length per variant (9 variants)",
+  "speed_scaling_analytic": true,
+  "frozen_baseline_threshold_hash": "343737d0ea0568ac6fb037e785a70b5bbce44a76561519ebeadd9ee2d9419eed",
+  "reference_cost_hash": "c694bbbe9bf2dfe513429ce99aa0709cbe5e7fb11f1187d1b1729df3f76dd0ed",
+  "senior_exposure_hash": "52209c404b764abda58ca184fc9eef3ccc998712394137c312f43d80b764cf02",
+  "input_paths": [
+    "data/derived/hex_vulnerability_final.parquet",
+    "data/interim/walking_edge_costs.parquet",
+    "data/walking_network_nodes_with_elevation.csv",
+    "qgis/out_transit_d_candidates.gpkg"
+  ],
+  "output_paths": [
+    "outputs\\reports\\m4_senior\\m4_senior_variant_metrics.csv",
+    "outputs\\reports\\m4_senior\\m4_senior_hex_long.csv",
+    "outputs\\reports\\m4_senior\\m4_senior_robust_core.csv",
+    "outputs\\reports\\m4_senior\\m4_senior_summary.json",
+    "qgis\\m4_senior_access_runner.gpkg",
+    "data\\derived\\edge_costs_m4_senior_components.parquet"
+  ],
+  "notes": "Steps-path dependence is derived by comparing steps_allowed vs steps_barrier costs instead of reconstructing path geometries."
+}

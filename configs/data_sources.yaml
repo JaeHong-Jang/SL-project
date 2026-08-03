@@ -1,0 +1,63 @@
+walking_edges:
+  path: data/walking_network_edges_with_slope_google.csv
+  encoding: utf-8
+  geometry_col: geometry_wkt
+
+walking_nodes:
+  path: data/walking_network_nodes_with_elevation.csv
+  encoding: utf-8
+  geometry_col: geometry_wkt
+
+bus_ridership:
+  path: data/bus_stop_ridership_2025_with_geom.csv
+  encoding: utf-8
+  lon_col: lon
+  lat_col: lat
+  valid_columns: [coord_valid, location_matched]
+
+subway_ridership:
+  path: data/subway_station_ridership_2025_with_geom.csv
+  encoding: utf-8
+  lon_col: lon
+  lat_col: lat
+  valid_columns: [location_matched]
+
+asos_weather:
+  path: data/OBS_ASOS_TIM_20260510220825.csv
+  encoding: cp949
+  datetime_col: 일시
+
+local_resident_250m:
+  glob: data/250_LOCAL_RESD_202511/*.csv
+  encoding: cp949
+  spatial_status: grid_metadata_required
+
+registered_population:
+  path: data/raw/서울시등록인구_2025_4분기.xlsx
+  sheet: 2-1. 세대 및 인구상세
+  senior_age_definition: 65세 이상 총인구
+  encoding: xlsx
+  spatial_status: admin_boundary_required
+
+life_mobility_admin:
+  path: data/life_mobility_admin_2025_summary.csv
+  encoding: utf-8
+  access: metadata_or_partitioned_only
+
+commercial_poi:
+  path: data/commercial_poi_2025_clean.csv
+  encoding: utf-8
+  lon_col: lon
+  lat_col: lat
+
+medical_poi:
+  path: data/medical_poi_clean.csv
+  encoding: utf-8
+  lon_col: lon
+  lat_col: lat
+
+senior_welfare_poi:
+  path: data/senior_welfare_with_coords.csv
+  encoding: utf-8
+  lon_col: lon
+  lat_col: lat

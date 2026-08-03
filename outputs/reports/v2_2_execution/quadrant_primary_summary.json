@@ -1,0 +1,6 @@
+{
+  "valid_hex_rows": 4383,
+  "high_cost_high_demand_hex_rows": 185,
+  "high_cost_high_demand_hidden_rows": 156,
+  "purpose": "Expose cost and demand axes directly without relying on product-score normalization."
+}

@@ -1,0 +1,3 @@
+display_name: SL Accessibility Pipeline
+short_description: Validate and score spatial accessibility pipeline outputs.
+default_prompt: Use the SL accessibility pipeline skill to check contracts, scoring, and QA assumptions for this spatial analysis task.

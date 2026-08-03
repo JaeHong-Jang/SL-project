@@ -1,0 +1,14 @@
+# 이 저장소의 산출물은 manifest.json 에 size_bytes / sha256 로 기록된다.
+# Git 의 CRLF <-> LF 자동 변환이 일어나면 바이트가 바뀌어 검증 체인이 깨진다.
+# 따라서 모든 파일의 자동 개행 변환을 끈다.
+* -text
+
+# 바이너리 명시 (diff 시도 방지)
+*.parquet binary
+*.gpkg    binary
+*.png     binary
+*.pdf     binary
+*.xlsx    binary
+*.pptx    binary
+*.hwp     binary
+*.zip     binary

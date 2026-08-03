@@ -1,0 +1,2 @@
+사용년월,표준버스정류장ID,버스정류장ARS번호,역명,hour,ride_type,passengers,route_count,lon,lat,coord_valid,location_matched
+202501,100000001,01001,종로2가사거리,00,승차,11,1,126.9877522923,37.5698055407,True,True

@@ -1,0 +1,18 @@
+project:
+  name: seoul_slope_weather_accessibility
+  timezone: Asia/Seoul
+  crs_wgs84: EPSG:4326
+  crs_metric: EPSG:5179
+
+paths:
+  data_dir: data
+  interim_dir: data/interim
+  processed_dir: data/processed
+  outputs_dir: outputs
+  reports_dir: outputs/reports
+
+runtime:
+  sample_rows: 10000
+  chunk_rows: 500000
+  max_eager_bytes: 104857600
+  fail_on_schema_warning: false

@@ -1,0 +1,6 @@
+﻿scenario_id,scenario_name,primary_output,output_exists,diagnostic_or_effect,counterfactual_effect_claim_allowed,requires_before_effect_claim,allowed_wording,admin_label_ready
+E0,m0_to_m3_environment_burden,outputs\reports\v2_2_execution\m0_m3_environment_burden_effect.csv,True,environment_burden_diagnostic,True,"Use only as accessibility-burden effect, not policy intervention or ridership demand effect",경사·기상 반영 시 접근비용/취약도 부담이 증가하는 후보를 진단,
+S1,candidate_stop_upper_bound,qgis\S1_delta_vulnerability_map.gpkg,True,diagnostic_upper_bound,False,"runner manifest, scenario cost hash, threshold hash, and path re-search evidence",정류장 신설/이전/접근로 개선 현장검토 후보 또는 상한선 스크리닝,
+S3,effect_category_diagnosis,qgis\S2_s3_effect_categories.gpkg,True,diagnostic_category_table,False,FrozenBaseline-linked delta output and scenario manifest,개입 효과 확정보다 원인/범주 진단,
+S4,weather_response_top20,qgis\scenario3_weather_response_top20_admin_fixed.gpkg,True,candidate_priority_table,False,"evaluate_scenario runner, delta vulnerability, and map-label QA",기상 대응 현장검토 Top20 우선순위,True
+M4,senior_impedance,,False,method_design_only,False,"cost_m4_senior edge table, Dijkstra re-search, profile sensitivity, and M4 vulnerability table",고령자 전용 접근비용은 설계/후속 구현 대상으로만 표현,

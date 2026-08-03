@@ -1,0 +1,37 @@
+h3:
+  resolution: 9
+
+baseline:
+  measurement: M0
+  scenario: S0-M3
+  vulnerable_quantile: 0.8
+  freeze_normalization_from: S0-M3
+
+slope:
+  # Scenario default, not a calibrated coefficient.
+  # 0.03 means each 1 percentage-point of grade increases the distance-equivalent
+  # edge cost by 3% before the cap. Replace after calibration/sensitivity review.
+  error_exclude_grade_abs_percent: 100
+  cost_cap_grade_abs_percent: 30
+  sensitivity_caps: [25, 30, 40]
+  linear_alpha: 0.03
+
+weather:
+  # Scenario defaults, not calibrated coefficients.
+  # ASOS Seoul station 108 is applied as a spatially uniform weather scenario.
+  rain_weight: 1.0
+  snow_weight: 5.0
+  additive_beta: 0.03
+  interaction_beta: 0.08
+  missing_factor: 1.0
+  sensitivity:
+    additive_beta: [0.01, 0.03, 0.05]
+    interaction_beta: [0.04, 0.08, 0.12]
+    snow_weight: [3.0, 5.0, 8.0]
+
+accessibility:
+  walking_speed_m_per_min: 67
+  unreachable_cost: null
+
+transit:
+  require_valid_coordinates: true

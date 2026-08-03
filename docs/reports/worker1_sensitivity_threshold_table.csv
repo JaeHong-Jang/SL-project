@@ -1,0 +1,4 @@
+﻿threshold_top_share,quantile,vulnerability_threshold,vulnerable_count,hidden_count,hidden_registered_population_sum,hidden_registered_senior_population_sum,vulnerable_overlap_with_top20_baseline,vulnerable_retention_vs_top20_pct,vulnerable_jaccard_vs_top20,hidden_overlap_with_top20_baseline,hidden_retention_vs_top20_pct,hidden_jaccard_vs_top20
+0.1,0.9,0.03802026776620859,439,252,709043.6786053602,147658.4044426285,439,0.500570125427594,0.500570125427594,252,0.3987341772151899,0.3987341772151899
+0.2,0.8,0.028838610230807495,877,632,1660653.543722817,342011.689937603,877,1.0,1.0,632,1.0,1.0
+0.3,0.7,0.02317579584853565,1315,1040,2621233.6587548675,535839.3389796168,877,1.0,0.6669201520912548,632,1.0,0.6076923076923076

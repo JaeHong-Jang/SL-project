@@ -1,0 +1,62 @@
+{
+  "run_date": "2026-06-10",
+  "run_timestamp": "2026-06-10T17:11:56.950302+00:00",
+  "valid_hex_rows": 4383,
+  "destination_node_count": 8902,
+  "steps_edge_count": 5628,
+  "signed_grade_fallback_abs_count": 0,
+  "reference_variant": {
+    "speed_profile": "base",
+    "speed_m_per_s": 0.9,
+    "weather_profile": "rain",
+    "step_policy": "steps_penalty"
+  },
+  "speed_profiles_m_per_s": {
+    "very_slow": 0.7,
+    "slow": 0.8,
+    "base": 0.9,
+    "optimistic": 1.07
+  },
+  "speed_scaling_analytic": true,
+  "frozen_threshold": 0.02255588197368339,
+  "senior_exposure_definition": "registered_senior_population (raw, FrozenBaseline minmax)",
+  "reference_spearman_vs_m0": 0.9936756996969348,
+  "reference_spearman_vs_m3": 0.9958483515496341,
+  "reference_jaccard_vs_m3_vulnerable": 0.6673003802281369,
+  "reference_jaccard_vs_m3cost_senior_exposure": 0.9274725274725275,
+  "m3cost_senior_exposure_vulnerable_count": 877,
+  "barrier_snow_unreachable_hex": 27,
+  "robust_senior_core_count": 780,
+  "robust_senior_core_hidden_count": 543,
+  "uses_steps_on_rain_path_count": 92,
+  "no_alternative_without_steps_count": 27,
+  "reordering_detected": false,
+  "verdict": "M4-senior kept nearly the same ranking as M3; do not claim that senior impedance alone revealed new vulnerable areas. Exposure-axis change and barrier/snow burden shifts are the defensible findings.",
+  "claim_boundary": "M4-senior는 관측 보행자료로 보정된 모델이 아니라 profile scenario다. 고령자 실측 보행시간 예측이나 탑승수요 예측에 쓰지 않는다.",
+  "acceptance_check": {
+    "implementation_separated_from_m0_m3": true,
+    "speed_profiles_4": [
+      "base",
+      "optimistic",
+      "slow",
+      "very_slow"
+    ],
+    "signed_grade_first_abs_fallback": true,
+    "step_policies_3": [
+      "steps_allowed",
+      "steps_penalty",
+      "steps_barrier"
+    ],
+    "weather_profiles_3_with_asos_caveat": [
+      "dry",
+      "rain",
+      "snow"
+    ],
+    "dijkstra_research_per_variant": true,
+    "validity_metrics_reported": [
+      "spearman_m0_m3",
+      "jaccard_vs_m3",
+      "replacement_vs_reference"
+    ]
+  }
+}

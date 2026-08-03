@@ -1,1 +1,133 @@
+# ============================================================
+#  SL 프로젝트 — 서울 경사·기상 대중교통 보행접근성 분석
+#
+#  원칙: 코드와 "현재 결과"만 추적한다.
+#        원천 대용량 데이터, 제3자 저작물, 개인/기관 제출문서,
+#        로컬 에이전트 상태, 폐기된 산출물은 추적하지 않는다.
+# ============================================================
+
+# --- 비밀정보 ---
+.env
+
+# --- Python 환경 / 캐시 ---
+.venv/
+.venv-*/
+.uv-cache/
+.uv-cache2/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.pytest-tmp/
+.pytest-tmp-*/
+.pytest-review-tmp*/
+.pytest-run-*/
+pytest-cache-files-*/
+.registered-population-*/
+.ipynb_checkpoints/
+review_tmp/
+*.tmp
+*.bak
+
+# --- 원천/중간 데이터 (약 90GB) ---
+#     life_mobility_admin_2025_summary.csv 단일 파일만 85GB.
+#     GitHub 파일당 100MB 제한을 크게 초과하므로 전량 제외한다.
+#     재취득 방법은 docs/setup/data_acquisition.md 참고.
+data/*
+!data/data_catalog.csv
+
+#     예외: 최종 결과 테이블 3종만 추적한다.
+#     이것이 없으면 새로 clone 한 사람이 그림·지도를 하나도 재생성할 수 없다.
+!data/derived/
+data/derived/*
+!data/derived/hex_vulnerability_final.parquet
+!data/derived/hex_demand_features_final_h3res9.parquet
+!data/derived/hex_accessibility_prelim_M0_M3.parquet
+
+#     제외 유지: 생활이동 OD 파생물.
+#     서울시 빅데이터캠퍼스 제공 자료로 재배포가 제한되며, 반출 심의 대상이다.
+#     (메인 수요지수 미포함 보조 변수이므로 핵심 결과 재현에 영향 없음)
+data/derived/hex_mobility_aux*.parquet
+
+# --- QGIS 작업 레이어 (799MB) ---
+#     wrk_egis_landcover_merged_5179.gpkg (235MB),
+#     BND_ADM_DONG_PG.shp (129MB) 등 100MB 초과 파일 포함.
+#     파생 결과 레이어는 outputs/qgis_midterm_layers/ 에 별도 보관된다.
+#     선행 슬래시 필수: `qgis/` 로 쓰면 docs/qgis/ 재현 문서까지 함께 사라진다.
+/qgis/
+
+# --- 제3자 저작권 논문 PDF ---
+논문/
+
+# --- 개인 / 기관 제출 문서 ---
+서류 작업/
+*.hwp
+KakaoTalk_*.jpg
+
+# --- 로컬 AI 에이전트 상태 (프로젝트 소스 아님) ---
+.agents/
+.claude/
+.codex/
+.omc/
+.omx/
+
+# --- 폐기·중복 산출물 ---
+#     data_check.ipynb: 타 PC 사용자 경로가 셀 출력에 포함됨. 역할은 CLI validate-data 로 대체.
+#     분석_진행_시각화.ipynb: hex 4,551 기준 구버전(현재 4,383). 셀 출력 PNG가 대부분의 용량.
+data_check.ipynb
+분석_진행_시각화.ipynb
+hidden_candidates_black_style.png
+
+# --- 대용량 또는 재생성 가능한 산출물 ---
+#     scenario_interactive_map.html (12.6MB): scripts/build_interactive_scenario_map.py 로 재생성 가능
+outputs/maps/scenario_interactive_map.html
+outputs/figures/img_*.png
+outputs/docx_qa/
+outputs/tables/
+
+# --- 생활이동 OD 관련 QA 산출물 (재배포 제한) ---
+#     원본 파일의 행 수·이동량 총계·컬럼 스키마(성별/나이/이동유형)를 그대로 노출한다.
+#     서울시 빅데이터캠퍼스 재배포 조건상 공개 저장소에 올리지 않는다.
+outputs/reports/life_mobility_od_*.json
+outputs/reports/hex_mobility_aux*_qa.json
+
+# --- 현재 결과 산출에 사용되지 않는 스크립트 ---
+#     worker1_sensitivity_analysis.py : v2_2 정규화 민감도 + e_sensitivity 로 2회 대체됨
+#     export_registered_population_csv.py : CLI extract-registered-population 과 중복
+#     build_mid_reflection_docx.py : 성찰보고서 생성용, 연구 결과 아님 + 로컬 절대경로 의존
+#     build_sample_extracts.py : data/interim 샘플 생성용 개발 편의 스크립트
+#     profile_data.py / validate_data.py : CLI 진입점을 감싼 3줄 래퍼
+scripts/worker1_sensitivity_analysis.py
+scripts/export_registered_population_csv.py
+scripts/build_mid_reflection_docx.py
+scripts/build_sample_extracts.py
+scripts/profile_data.py
+scripts/validate_data.py
+
+# --- 발표 대본 / 슬라이드 제작 문서 ---
+#     실명·팀 내부 정보·발표자 배정이 포함되어 있고 결과 재현과 무관하다.
+docs/중간발표_대본.md
+docs/중간발표_대본_10분.md
+docs/중간발표_대본_구어체.md
+docs/최종발표_4-30_논문시각화_레퍼런스.md
+docs/최종발표_시각화_제작계획.md
+docs/qgis_논문형_시각화_제작안.md
+
+# --- 내부 운영 / 폐기 문서 ---
+#     SCENARIO_TASK_ASSIGNMENT.md : 담당자 실명 placeholder 포함, 진행상태 stale
+#     DEPLOYMENT_PACKAGE.md : Google Drive ZIP 배포안, 본 GitHub 저장소로 대체됨
+#     working_plan.md / current_status_audit_2026-05-13.md : 완료된 작업의 구버전 계획·감사
+docs/SCENARIO_TASK_ASSIGNMENT.md
+docs/DEPLOYMENT_PACKAGE.md
+docs/working_plan.md
+docs/current_status_audit_2026-05-13.md
+
+# --- Office 임시/잠금 파일 ---
+~$*
+
+# --- 빈 껍데기 파일 (0 바이트) ---
+outputs/figures/SL 최종 시각화.pptx
+
+# --- OS ---
 .DS_Store
+Thumbs.db

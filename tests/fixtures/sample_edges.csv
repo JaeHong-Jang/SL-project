@@ -1,0 +1,3 @@
+u,v,key,osmid,highway,length_m,elev_u_m,elev_v_m,elevation_diff_m,grade_percent,grade_abs_percent,slope_available,geometry_wkt
+1,2,0,10,residential,100,10,10,0,0,0,True,"LINESTRING (0 0, 100 0)"
+2,3,0,11,residential,100,10,20,10,10,10,True,"LINESTRING (100 0, 200 0)"

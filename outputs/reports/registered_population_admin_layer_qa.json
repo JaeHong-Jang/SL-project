@@ -1,0 +1,41 @@
+{
+  "boundary_source": "./qgis/BND_ADM_DONG_PG/BND_ADM_DONG_PG.shp",
+  "source_crs": "EPSG:5186",
+  "output_crs": "EPSG:5179",
+  "national_admin_count": 3559,
+  "seoul_admin_count": 426,
+  "joined_admin_count": 426,
+  "registered_population_input_rows": 428,
+  "registered_population_join_rows": 426,
+  "registered_population_input_sum": 9579177,
+  "registered_senior_population_input_sum": 1912751,
+  "registered_population_joined_sum": 9579177,
+  "registered_senior_population_joined_sum": 1912751,
+  "population_only_keys": [],
+  "boundary_only_keys": [],
+  "alias_rules": [
+    {
+      "from": [
+        "동대문구",
+        "용두동"
+      ],
+      "to": [
+        "동대문구",
+        "용신동"
+      ]
+    },
+    {
+      "from": [
+        "동대문구",
+        "신설동"
+      ],
+      "to": [
+        "동대문구",
+        "용신동"
+      ]
+    }
+  ],
+  "status": "joined: Seoul admin boundary + registered population",
+  "output": ".\\qgis\\wrk_registered_population_admin_5179.gpkg",
+  "layer": "wrk_registered_population_admin_5179"
+}

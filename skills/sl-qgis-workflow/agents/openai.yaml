@@ -1,0 +1,3 @@
+display_name: SL QGIS Workflow
+short_description: Guide QGIS layer management, processing, and map exports.
+default_prompt: Use the SL QGIS workflow skill to organize layers, run processing steps, and prepare map exports for this spatial project.

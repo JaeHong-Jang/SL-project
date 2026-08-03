@@ -1,0 +1,20 @@
+name: sl-accessibility
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - geopandas
+  - h3-py
+  - networkx
+  - numpy
+  - pandas
+  - polars
+  - pyarrow
+  - pyyaml
+  - shapely
+  - typer
+  - pytest
+  - ruff
+  - pip
+  - pip:
+      - -e .

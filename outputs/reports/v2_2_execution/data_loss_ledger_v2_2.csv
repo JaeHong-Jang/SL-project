@@ -1,0 +1,13 @@
+﻿stage,input_rows,output_rows,loss_rows,row_change_type,qa_status,reason,evidence
+walking_network_edge_costs,467556,466626,930.0,filter_then_cost_cap,documented,"missing grade_abs_percent=900; grade_abs_percent>100=30; 30-100% grades are capped, not dropped",data/walking_network_edges_with_slope_google.csv; data/interim/walking_edge_costs.parquet
+admin_boundary_seoul_subset,3559,426,,spatial_subset_not_loss,documented,National admin boundary is subset to Seoul for project scope.,outputs/reports/admin_dong_seoul_qa.json
+registered_population_admin_alias_join,428,426,0.0,alias_merge_population_preserved,joined: Seoul admin boundary + registered population,Population rows are merged to boundary keys; registered and senior population sums are preserved.,outputs/reports/registered_population_admin_layer_qa.json
+living_population_250m_summary,7572988,8600,,temporal_rows_aggregated_to_grid,documented,Raw monthly/hourly observations are summarized by 250m grid.,data/interim/local_resident_250m_grid_summary.parquet
+living_population_250m_polygon_join,8600,8599,1.0,join_gap_plus_zero_population_polygons,documented,grid_without_population=1526; summary_not_in_grid=1,outputs/reports/livingpop_250m_join_qa.json
+final_demand_h3,4551,4551,0.0,hex_rows_preserved,"final: includes living population, registered population, registered senior population, and POI",nonzero_living=4548; nonzero_registered=4551; nonzero_poi=4285,outputs/reports/hex_demand_features_final_qa.json
+life_mobility_od_aux,1666759315,425,0.0,auxiliary_aggregation_not_final_demand,complete,"OD is kept as auxiliary, not mixed into final demand. used_rows=1666759315; unmatched_origin=6; unmatched_destination=6",outputs/reports/life_mobility_od_aux_qa.json
+accessibility_m0_m3,4551,4383,168.0,snap_invalid_or_unreachable,documented,origin_snap_valid=4384; origin_snap_invalid=167; unreachable_after_snap=1,outputs/reports/hex_accessibility_prelim_qa.json
+analysis_valid_final,4551,4383,168.0,analysis_universe_filter,pass,Rows outside analysis-valid universe are retained in table but excluded from final score.,outputs/reports/hex_vulnerability_final_audit.json
+vulnerable_m3_final,4383,877,,top_fraction_threshold_not_loss,top_20_percent_threshold,Policy screening threshold; not row loss.,data/derived/hex_vulnerability_final.parquet
+hidden_vulnerability_diagnostics,632,632,0.0,filtered_diagnostic_subset,admin_labels_present,Hidden vulnerable detail table used for reason diagnostics.,outputs/reports/hidden_vulnerability_reason_diagnostics_qa.json
+s4_weather_response_top20_fixed_gpkg,20,20,0.0,label_repair_no_row_loss,map_label_ready,QGIS layer repaired from CSV admin labels.,outputs/reports/v2_2_execution/s4_top20_admin_label_qa.json

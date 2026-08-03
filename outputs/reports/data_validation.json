@@ -1,0 +1,207 @@
+[
+  {
+    "dataset": "walking_edges",
+    "ok": true,
+    "issues": []
+  },
+  {
+    "dataset": "walking_nodes",
+    "ok": true,
+    "issues": []
+  },
+  {
+    "dataset": "bus_ridership",
+    "ok": true,
+    "issues": []
+  },
+  {
+    "dataset": "subway_ridership",
+    "ok": true,
+    "issues": []
+  },
+  {
+    "dataset": "asos_weather",
+    "ok": true,
+    "issues": []
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251101.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251102.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251103.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251104.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251105.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251106.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251107.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251108.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251109.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251110.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251111.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251112.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251113.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251114.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251115.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251116.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251117.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251118.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251119.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251120.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251121.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251122.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251123.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251124.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251125.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251126.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251127.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251128.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251129.csv"
+  },
+  {
+    "dataset": "local_resident_250m",
+    "ok": true,
+    "issues": [],
+    "path": ".\\data\\250_LOCAL_RESD_202511\\250_LOCAL_RESD_20251130.csv"
+  }
+]

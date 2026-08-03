@@ -1,0 +1,31 @@
+{
+  "html": "outputs\\maps\\scenario_interactive_map.html",
+  "source_summary": "outputs\\reports\\scenario_counterfactual\\scenario_counterfactual_runner_summary.json",
+  "layer_counts": {
+    "hidden": 632,
+    "busStops": 10664,
+    "subwayStops": 303,
+    "s1Reduced": 55,
+    "s1Resolved": 49,
+    "s1Candidates": 48,
+    "s3Reduced": 45,
+    "s3Resolved": 0,
+    "s3Edges": 2970,
+    "s4Reduced": 3932,
+    "s4Resolved": 102,
+    "s4Priority": 20
+  },
+  "scenario_summary": {
+    "baseline_hidden_count": 632,
+    "S1": {
+      "resolved_hidden_count": 49
+    },
+    "S3": {
+      "resolved_hidden_count": 0
+    },
+    "S4": {
+      "resolved_hidden_count": 102
+    }
+  },
+  "claim_scope": "Interactive inspection map for accessibility burden counterfactuals; not a ridership demand forecast."
+}

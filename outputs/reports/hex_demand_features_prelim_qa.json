@@ -1,0 +1,19 @@
+{
+  "hex_count": 4551,
+  "crs": "EPSG:5179",
+  "nonzero_living_hex_count": 4548,
+  "nonzero_poi_hex_count": 4285,
+  "mean_living_population_sum": 7569869.936245397,
+  "mean_senior_population_sum": 1525347.4867378979,
+  "poi_total_sum": 522361,
+  "commercial_poi_sum": 500744,
+  "medical_poi_sum": 21174,
+  "senior_welfare_poi_sum": 443,
+  "coverage_ratio_min": 0.0,
+  "coverage_ratio_mean": 0.9936608344991769,
+  "coverage_ratio_max": 1.0000000000003295,
+  "demand_index_min": 0.0,
+  "demand_index_mean": 0.15670077341252445,
+  "demand_index_max": 0.6974463911586586,
+  "status": "preliminary: uses living population and POI only; registered population is not yet joined"
+}

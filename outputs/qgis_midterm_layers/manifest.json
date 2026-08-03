@@ -1,0 +1,139 @@
+{
+  "00_seoul_boundary": {
+    "file": "outputs/qgis_midterm_layers/00_seoul_boundary.gpkg",
+    "features": 1,
+    "crs": "EPSG:5179",
+    "columns": [
+      "EMD_CD",
+      "EMD_NM",
+      "COL_ADM_SE"
+    ]
+  },
+  "00_admin_dong": {
+    "file": "outputs/qgis_midterm_layers/00_admin_dong.gpkg",
+    "features": 426,
+    "crs": "EPSG:5179",
+    "columns": [
+      "district_code",
+      "district_name",
+      "admin_code",
+      "admin_name"
+    ]
+  },
+  "00_admin_gu": {
+    "file": "outputs/qgis_midterm_layers/00_admin_gu.gpkg",
+    "features": 25,
+    "crs": "EPSG:5179",
+    "columns": [
+      "district_name"
+    ]
+  },
+  "01_valid_hex_base": {
+    "file": "outputs/qgis_midterm_layers/01_valid_hex_base.gpkg",
+    "features": 4383,
+    "crs": "EPSG:5179",
+    "columns": [
+      "hex_id",
+      "analysis_valid_final",
+      "official_400m_ok_m0",
+      "vulnerable_m3_final",
+      "hidden_vulnerable_final",
+      "registered_population",
+      "registered_senior_population",
+      "demand_index_final",
+      "access_cost_m0",
+      "access_cost_m3",
+      "vulnerability_m3_final"
+    ]
+  },
+  "02_environment_burden_hex": {
+    "file": "outputs/qgis_midterm_layers/02_environment_burden_hex.gpkg",
+    "features": 4383,
+    "crs": "EPSG:5179",
+    "columns": [
+      "hex_id",
+      "access_cost_m0",
+      "access_cost_m3",
+      "cost_gap_m3_minus_m0",
+      "cost_gap_ratio_m3_over_m0",
+      "burden_class",
+      "m0_400_to_m3_over_400",
+      "hidden_vulnerable_final",
+      "registered_population",
+      "registered_senior_population"
+    ]
+  },
+  "03_hidden_candidates": {
+    "file": "outputs/qgis_midterm_layers/03_hidden_candidates.gpkg",
+    "features": 632,
+    "crs": "EPSG:5179",
+    "columns": [
+      "hex_id",
+      "hidden_class",
+      "robust_core_hidden_flag",
+      "normalization_sensitive_flag",
+      "variant_hidden_count",
+      "registered_population",
+      "registered_senior_population",
+      "demand_index_final",
+      "access_cost_m0",
+      "access_cost_m3",
+      "vulnerability_m3_final"
+    ]
+  },
+  "04_hidden_reason_diagnostics": {
+    "file": "outputs/qgis_midterm_layers/04_hidden_reason_diagnostics.gpkg",
+    "features": 632,
+    "crs": "EPSG:5179",
+    "columns": [
+      "hex_id",
+      "primary_reason",
+      "reason_label",
+      "district_name",
+      "admin_name",
+      "registered_population",
+      "registered_senior_population",
+      "access_cost_m0",
+      "access_cost_m3",
+      "slope_increment_m1_m0",
+      "weather_additive_increment_m2_m1",
+      "interaction_increment_m3_m2",
+      "demand_index_final"
+    ]
+  },
+  "05_policy_review_candidates": {
+    "file": "outputs/qgis_midterm_layers/05_policy_review_candidates.gpkg",
+    "features": 232,
+    "crs": "EPSG:5179",
+    "columns": [
+      "hex_id",
+      "policy_review_type",
+      "s1_resolved_hidden",
+      "s3_resolved_hidden",
+      "s4_weather_sensitive",
+      "uses_steps",
+      "step_alt_exists",
+      "step_no_alt",
+      "baseline_hidden",
+      "s1_scenario_hidden",
+      "s4_scenario_hidden",
+      "primary_reason",
+      "district_name",
+      "admin_name",
+      "registered_population",
+      "registered_senior_population"
+    ]
+  },
+  "06_district_hidden_summary": {
+    "file": "outputs/qgis_midterm_layers/06_district_hidden_summary.gpkg",
+    "features": 25,
+    "crs": "EPSG:5179",
+    "columns": [
+      "district_name",
+      "hidden_count",
+      "robust_count",
+      "reason_label",
+      "reason_count"
+    ]
+  }
+}

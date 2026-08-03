@@ -1,0 +1,55 @@
+{
+  "rows": [
+    {
+      "scenario_id": "S1",
+      "scenario_name": "S1_all_48_candidate_stops_dijkstra_upper_bound",
+      "primary_output": "qgis\\S1_delta_vulnerability_runner.gpkg",
+      "manifest_path": "outputs\\reports\\scenario_counterfactual\\S1_delta_vulnerability.manifest.json",
+      "row_count": 4383,
+      "path_research_run": true,
+      "effect_output_label": "upper_bound",
+      "counterfactual_effect_claim_allowed": false,
+      "baseline_hidden_count": 632,
+      "scenario_hidden_count": 583,
+      "resolved_hidden_count": 49,
+      "new_hidden_count": 0,
+      "senior_weighted_mean_delta_cost_m": 4.745900660789711,
+      "spearman_vulnerability_before_after": 0.9519521547892023,
+      "notes": "All 48 candidate stops are treated as available destination nodes. This is a Dijkstra re-search upper bound, not a feasible stop program."
+    },
+    {
+      "scenario_id": "S3",
+      "scenario_name": "S3_global_grade_gt30_cap15_dijkstra",
+      "primary_output": "qgis\\S3_delta_vulnerability_runner.gpkg",
+      "manifest_path": "outputs\\reports\\scenario_counterfactual\\S3_delta_vulnerability.manifest.json",
+      "row_count": 4383,
+      "path_research_run": true,
+      "effect_output_label": "counterfactual_effect",
+      "counterfactual_effect_claim_allowed": true,
+      "baseline_hidden_count": 632,
+      "scenario_hidden_count": 632,
+      "resolved_hidden_count": 0,
+      "new_hidden_count": 0,
+      "senior_weighted_mean_delta_cost_m": 0.19990309505197587,
+      "spearman_vulnerability_before_after": 0.9999643351571441,
+      "notes": "Formal counterfactual for a citywide steep-edge program: every edge with grade_abs_percent > 30 is recalculated with a 15 percent grade cap and Dijkstra is re-run. Budget, constructability, and exact path geometries are not validated here."
+    },
+    {
+      "scenario_id": "S4",
+      "scenario_name": "S4_weather_terms_removed_dijkstra_upper_bound",
+      "primary_output": "qgis\\S4_weather_off_delta_vulnerability_runner.gpkg",
+      "manifest_path": "outputs\\reports\\scenario_counterfactual\\S4_weather_off_delta_vulnerability.manifest.json",
+      "row_count": 4383,
+      "path_research_run": true,
+      "effect_output_label": "upper_bound",
+      "counterfactual_effect_claim_allowed": false,
+      "baseline_hidden_count": 632,
+      "scenario_hidden_count": 530,
+      "resolved_hidden_count": 102,
+      "new_hidden_count": 0,
+      "senior_weighted_mean_delta_cost_m": 12.408481595527205,
+      "spearman_vulnerability_before_after": 0.9999819338096853,
+      "notes": "This is a weather-component upper bound: it removes weather terms citywide and re-runs Dijkstra. It is not evidence that local shelters or snow operations will produce the same effect."
+    }
+  ]
+}

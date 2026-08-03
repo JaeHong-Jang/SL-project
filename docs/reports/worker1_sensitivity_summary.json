@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-05-16T18:32:58+09:00",
+  "row_count": 4551,
+  "analysis_valid_count": 4383,
+  "baseline_vulnerable_count": 877,
+  "baseline_hidden_count": 632,
+  "alpha": 0.03,
+  "beta_weather": 0.03,
+  "beta_interaction": 0.08,
+  "weather_intensity": 2.0000000000000018,
+  "reconstruction_mean_abs_error": 0.06485025355443585,
+  "reconstruction_p90_abs_error": 0.12433369190986258,
+  "parameter_worst_vulnerable_retention_pct": 0.9817559863169898,
+  "parameter_worst_hidden_retention_pct": 0.9746835443037974,
+  "parameter_worst_spearman": 0.9996774537224342,
+  "analysis_command": ".venv-linux/bin/python scripts/worker1_sensitivity_analysis.py",
+  "test_command": ".venv-linux/bin/python -m pytest tests/test_cost_parameters.py tests/test_vulnerability.py -q -p no:cacheprovider; PYTHONPATH=src .venv-linux/bin/python -m sl_accessibility.cli validate-data --output .omx/logs/worker1_data_validation.json",
+  "verification_result": "pass: pytest 7 passed in 3.74s; validate-data 35/35 contract samples ok",
+  "environment_note": "Windows .venv/Scripts/python.exe and powershell.exe bridge attempts failed with WSL UtilBindVsockAnyPort; analysis was reproduced in WSL .venv-linux.",
+  "status": "complete"
+}

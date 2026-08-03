@@ -1,0 +1,300 @@
+{
+  "schema_version": "1.0",
+  "created_at_utc": "2026-06-10T13:44:29.797979+00:00",
+  "command": "validate-data",
+  "project_root": ".",
+  "environment": {
+    "python_version": "3.14.3",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "cli_args": {
+    "config_dir": "configs",
+    "output": "outputs/reports/data_validation.json"
+  },
+  "cli_args_hash": "c77e938c3d3eca2875af3ea501b7c2cbb4a0d37b1154cba96a58e87918d7a4a7",
+  "config": {
+    "config_dir": ".\\configs",
+    "files": [
+      {
+        "role": "default.yaml",
+        "path": "configs/default.yaml",
+        "exists": true,
+        "size_bytes": 373,
+        "sha256": "1ff514c38e990c35d1a75efbd83f2a87a070ca998e9b2e5e02583d13409e95a1"
+      },
+      {
+        "role": "data_sources.yaml",
+        "path": "configs/data_sources.yaml",
+        "exists": true,
+        "size_bytes": 1456,
+        "sha256": "891f3b864302134c43c40b0e16439174620b8fab12a90a5c92cd645ab860f4ff"
+      },
+      {
+        "role": "model_params.yaml",
+        "path": "configs/model_params.yaml",
+        "exists": true,
+        "size_bytes": 969,
+        "sha256": "cb0a982b0a1fa8b4588f30fb88b40760221943e950a43273b8aa2cb768390796"
+      }
+    ],
+    "hash": "9d883f2d451c36ca55c453a002f82a23f7f4c193af64f2389b10852aaeee7ae4"
+  },
+  "inputs": [
+    {
+      "role": "data_sources",
+      "path": "data/walking_network_edges_with_slope_google.csv",
+      "exists": true,
+      "size_bytes": 137607461,
+      "sha256": "98a1e730a3e43e63e268587eef94e9d4bad08ffc813241868887c923c0784e03"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/walking_network_nodes_with_elevation.csv",
+      "exists": true,
+      "size_bytes": 22904470,
+      "sha256": "a9349f49d6c4440aa1c30f210308f1500f7ca0a2972086e99ab69109a5b25ad3"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/bus_stop_ridership_2025_with_geom.csv",
+      "exists": true,
+      "size_bytes": 3201807835,
+      "sha256": "279e3a56eb9249ce1972704327d83f09b5cb442028b62e4253b6ce523ba43de0"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/subway_station_ridership_2025_with_geom.csv",
+      "exists": true,
+      "size_bytes": 24492342,
+      "sha256": "f497b2ea027599698b1e8dcc30d5ac5ad00acead939626a8af0f21181d059d6c"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/OBS_ASOS_TIM_20260510220825.csv",
+      "exists": true,
+      "size_bytes": 1058606,
+      "sha256": "d9412744c97b8e5dc5b3b06912a594d4e8ad7467477a9fea0179d71c8347d7fa"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251101.csv",
+      "exists": true,
+      "size_bytes": 58949660,
+      "sha256": "cc2b448b713abc5bb555754cc93dd09df98c415cd77bc70f4ee24031416a8c41"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251102.csv",
+      "exists": true,
+      "size_bytes": 58639926,
+      "sha256": "4bbe705b31e1fd1d871ba0f1940a503166312ae37494499aa97d814d154f15af"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251103.csv",
+      "exists": true,
+      "size_bytes": 58777476,
+      "sha256": "349138f3d0d1b2b3395ff7397100893652a54696b4fe8793a75a98745a6f7b75"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251104.csv",
+      "exists": true,
+      "size_bytes": 58856267,
+      "sha256": "6393998d73c86981deeda5c89b021e7ee95ef2ec75860c8058f716c4e9a3958e"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251105.csv",
+      "exists": true,
+      "size_bytes": 58853216,
+      "sha256": "239e14fce33c7e27f2b275c73c7037f4c9023fc5097a9663116222b925fb0bfd"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251106.csv",
+      "exists": true,
+      "size_bytes": 58826650,
+      "sha256": "9e3855f6cc31f2ac9e51a98b52bef792a2b4590305afcf32f6cd1e61becc43db"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251107.csv",
+      "exists": true,
+      "size_bytes": 58891913,
+      "sha256": "6c16b1c48c0cf12fde54dbd62f04b6d1a19e5e55398dcdb6e196f2abbb0b4214"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251108.csv",
+      "exists": true,
+      "size_bytes": 58889403,
+      "sha256": "14f1cb75956f1c3e4ae101ed7296f99046f0fe4a8d5159715695d0b07d1be742"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251109.csv",
+      "exists": true,
+      "size_bytes": 58687200,
+      "sha256": "ae07385be790fc3621129471276f18c0b28c698ad3a4048780b01e856205a862"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251110.csv",
+      "exists": true,
+      "size_bytes": 58835109,
+      "sha256": "a3c4fdae219ea0d6ae10bb22ec432f77827ec112b6454338f65ce36f92f225b1"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251111.csv",
+      "exists": true,
+      "size_bytes": 58794282,
+      "sha256": "310a6b85c7c3fdcca891fc3c7c3bb78e1c7336382c44190f23241e3b3e50ccc2"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251112.csv",
+      "exists": true,
+      "size_bytes": 58793501,
+      "sha256": "c25a4234b317ed00d83582c7843ae3fd4683825b877527a3969af36d9724f178"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251113.csv",
+      "exists": true,
+      "size_bytes": 58832405,
+      "sha256": "4c0ae833fba430775eb3a5941503902143273a4852f3b709861509b68421c4df"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251114.csv",
+      "exists": true,
+      "size_bytes": 58967829,
+      "sha256": "302d560bb29be467a192a77af18301b517d32743cf5cfd7c4a87e679377d8f97"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251115.csv",
+      "exists": true,
+      "size_bytes": 58827321,
+      "sha256": "188db9c6b9f5f4756344eef93bf8f7f87017a4530004f7dacf1bfe97a1bcc4af"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251116.csv",
+      "exists": true,
+      "size_bytes": 58725573,
+      "sha256": "020a6ccf9305fae81b98adec76e459bbe0b11a1990a059c1148469318125feca"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251117.csv",
+      "exists": true,
+      "size_bytes": 58770883,
+      "sha256": "ab7b07a98085482d5640190a00a2ca9d5ac2b932cafee3afde08881ed23c6600"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251118.csv",
+      "exists": true,
+      "size_bytes": 58643148,
+      "sha256": "3f1725326d19937d6a8d665995fce787d710baa49c8151f5e43bd39824d75bcf"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251119.csv",
+      "exists": true,
+      "size_bytes": 58813627,
+      "sha256": "ecd0664397b824822e5632214556e0ac0c8fd2e8dd27c991ba78a82bffbe4270"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251120.csv",
+      "exists": true,
+      "size_bytes": 58879794,
+      "sha256": "07c069d1f99eb7982ff860dbc947bacac0a338ebe9040b75aae59405ac18f59c"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251121.csv",
+      "exists": true,
+      "size_bytes": 58939575,
+      "sha256": "5b70d3cc15fad453393ea1b1356fdb0f43a8f7af9f966fc4087192170632ddec"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251122.csv",
+      "exists": true,
+      "size_bytes": 58903973,
+      "sha256": "7f07e50de10970c0e4f3d5f7cdcf34d105b647c95f2a824cebf51ec23b4a7691"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251123.csv",
+      "exists": true,
+      "size_bytes": 58710406,
+      "sha256": "cd71bc5eefc8fb82bdde0ffccb9e7a0a8cdca7246e5b9091322fda463baf0315"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251124.csv",
+      "exists": true,
+      "size_bytes": 58835838,
+      "sha256": "378d04ab6059b6a0d6ae1d5b0b754ff2256916b70778489e9490bed656b94ee4"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251125.csv",
+      "exists": true,
+      "size_bytes": 58780827,
+      "sha256": "f3e902f43ad96489d98cfdfad549730a025a3f78ed5c393745977b96fa28fb03"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251126.csv",
+      "exists": true,
+      "size_bytes": 58858928,
+      "sha256": "bba838843527a39a7a3294ca564e5f5f5cd760d945f59aff50c4dde76f18e1a7"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251127.csv",
+      "exists": true,
+      "size_bytes": 58852504,
+      "sha256": "c6f0506c64b95ddfd49b777eabdbbee7480dfdc0154d818a249a8bf8758a5d56"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251128.csv",
+      "exists": true,
+      "size_bytes": 47453001,
+      "sha256": "c23e59873bb3fdd243b2577b02db5a7d2a4180c71846422280cdf8fddad607f2"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251129.csv",
+      "exists": true,
+      "size_bytes": 58906644,
+      "sha256": "51d5a88ffee5a125a097a054031c5719112ca96ee9071fbd453aae5af9a3a4a3"
+    },
+    {
+      "role": "data_sources",
+      "path": "data/250_LOCAL_RESD_202511/250_LOCAL_RESD_20251130.csv",
+      "exists": true,
+      "size_bytes": 58720571,
+      "sha256": "7fa7dba9283168ed7307f4f144df61362f3ba3dad08ab14693be62ea78720d74"
+    }
+  ],
+  "input_hash": "851c1dd4495c7249842ac13deb6943143e1a0f0f0b67d1199c1200333d29ea13",
+  "outputs": [
+    {
+      "role": "report",
+      "path": "outputs/reports/data_validation.json",
+      "exists": true,
+      "size_bytes": 7030,
+      "sha256": "959e97c328865916d5b8ac668029dfc8c645278ee0f575468e03fb4288d6a9de"
+    }
+  ],
+  "output_hash": "142a5509f2587fd4c3f1bd84ace519bbdf3c4ae3f9abb7d8373353fcff5237be"
+}

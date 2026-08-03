@@ -1,0 +1,53 @@
+{
+  "input": "qgis/BND_ADM_DONG_PG/BND_ADM_DONG_PG.shp",
+  "output": "qgis/wrk_admin_dong_seoul_5179.gpkg",
+  "layer": "wrk_admin_dong_seoul_5179",
+  "source_crs": "EPSG:5186",
+  "output_crs": "EPSG:5179",
+  "national_feature_count": 3559,
+  "seoul_feature_count": 426,
+  "base_dates": [
+    "20250630"
+  ],
+  "district_count": 25,
+  "district_counts": {
+    "강남구": 22,
+    "강동구": 19,
+    "강북구": 13,
+    "강서구": 20,
+    "관악구": 21,
+    "광진구": 15,
+    "구로구": 16,
+    "금천구": 10,
+    "노원구": 19,
+    "도봉구": 14,
+    "동대문구": 14,
+    "동작구": 15,
+    "마포구": 16,
+    "서대문구": 14,
+    "서초구": 18,
+    "성동구": 17,
+    "성북구": 20,
+    "송파구": 27,
+    "양천구": 18,
+    "영등포구": 18,
+    "용산구": 16,
+    "은평구": 16,
+    "종로구": 17,
+    "중구": 15,
+    "중랑구": 16
+  },
+  "registered_population_csv": "data/interim/registered_population_admin_2025q4.csv",
+  "registered_population_row_count": 428,
+  "boundary_only_after_name_normalization": [],
+  "population_only_after_name_normalization": [
+    [
+      "동대문구",
+      "신설동"
+    ],
+    [
+      "동대문구",
+      "용두동"
+    ]
+  ]
+}

@@ -1,0 +1,12 @@
+﻿dataset_key,dataset_name,path,files,size_mb,rows,cols,encoding,year,has_coordinates,use_status,use_reason,quality_issue
+commercial,상권 데이터,소상공인시장진흥공단_상가(상권)정보_서울_202512.csv,1,277.89,534978,39.0,utf-8-sig,2025-12,True,사용,시설밀도와 상업활동 수요를 산정하기 위해 사용,
+local_population_2026,250m 생활인구,250_LOCAL_RESD_20260425\250_LOCAL_RESD_20260425.csv,1,55.99,254264,33.0,cp949,2026-04-25,False,제외,2025년 기준 분석과 시점이 맞지 않아 핵심 분석에서 제외,
+hospital,병의원 위치,서울시 병의원 위치 정보.csv,1,10.2,22239,34.0,cp949,원본 기준,True,사용,의료시설 접근 수요와 교통약자 수요 보정을 위해 사용,
+public_toilet,공중화장실 위치,서울시 공중화장실 위치정보.csv,1,1.16,4429,17.0,cp949,원본 기준,True,보조,보행편의 보조지표로만 검토,
+registered_population,등록인구,등록인구(연령별_동별)_20260430162618.csv,1,0.02,79,46.0,utf-8-sig,2025 4/4 포함,False,보조,생활이동 수요 해석과 고령인구 보정에 참고,
+senior_welfare,노인의료복지시설,서울시 노인의료복지시설현황.xlsx,1,0.13,,,xlsx,2024-12-31,False,사용,고령자 관련 시설 수요 보정에 사용,확인 필요
+elevation_copernicus,Copernicus 고도 노드,seoul_south_korea_copernicus_glo30_node_elevations.csv,1,17.68,165300,6.0,utf-8-sig,원본 기준,True,사용,보행 네트워크 경사비용 산정의 기본 고도값으로 사용,
+elevation_google,Google 고도 노드,seoul_south_korea_node_elevations_with_resolution.csv,1,13.97,165300,6.0,utf-8-sig,원본 기준,True,보조,Copernicus 고도값과 비교 검증용으로만 사용,
+life_mobility,생활이동 행정동,생활이동_행정동_202501,288,70628.57,대용량/집계 시 계산,10.0,cp949,2025,False,사용,행정동 OD 이동수요의 핵심 자료,대용량: chunk 집계 필요
+bus_ridership,버스 정류장별 승하차,2025년_버스노선별_정류장별_시간대별_승하차_인원_정보(01월),12,172.88,509498,57.0,cp949,2025,False,사용,정류장별 시간대 대중교통 이용수요 산정,좌표 없음: 별도 좌표 데이터와 병합 필요
+subway_ridership,지하철 역별 승하차,서울시_지하철_호선별_역별_시간대별_승하차_인원_정보_(11),12,2.62,7456,52.0,cp949,2025,False,사용,역별 시간대 대중교통 이용수요 산정,좌표 없음: 별도 좌표 데이터와 병합 필요

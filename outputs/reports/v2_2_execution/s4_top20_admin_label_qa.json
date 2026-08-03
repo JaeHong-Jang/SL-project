@@ -1,0 +1,21 @@
+{
+  "csv_path": "scenario3_weather_response_top20.csv",
+  "gpkg_path": "qgis\\scenario3_weather_response_top20.gpkg",
+  "fixed_gpkg_path": "qgis\\scenario3_weather_response_top20_admin_fixed.gpkg",
+  "csv_rows": 20,
+  "gpkg_rows": 20,
+  "fixed_rows": 20,
+  "csv_district_name_nulls": 0,
+  "csv_admin_name_nulls": 0,
+  "csv_admin_code_nulls": 0,
+  "gpkg_before_district_name_nulls": 20,
+  "gpkg_before_admin_name_nulls": 20,
+  "gpkg_before_admin_code_nulls": 0,
+  "fixed_district_name_nulls": 0,
+  "fixed_admin_name_nulls": 0,
+  "fixed_admin_code_nulls": 0,
+  "csv_label_ready": true,
+  "original_gpkg_label_ready": false,
+  "fixed_gpkg_label_ready": true,
+  "interpretation": "CSV already carries admin labels; original GPKG label columns are repaired into the fixed QGIS layer for map labeling."
+}

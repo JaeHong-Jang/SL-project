@@ -1,0 +1,32 @@
+{
+  "hex_count": 4551,
+  "crs": "EPSG:5179",
+  "registered_admin_layer": ".\\qgis\\wrk_registered_population_admin_5179.gpkg",
+  "registered_admin_layer_name": "wrk_registered_population_admin_5179",
+  "nonzero_living_hex_count": 4548,
+  "nonzero_registered_hex_count": 4551,
+  "nonzero_poi_hex_count": 4285,
+  "registered_population_sum": 9579177.0,
+  "registered_senior_population_sum": 1912751.0,
+  "mean_living_population_sum": 7569869.936245397,
+  "poi_total_sum": 522361,
+  "registered_coverage_ratio_min": 0.3967733713811001,
+  "registered_coverage_ratio_mean": 0.9971934281963738,
+  "registered_coverage_ratio_max": 1.0000000000002875,
+  "demand_component_columns": [
+    "registered_population_norm",
+    "registered_senior_population_norm",
+    "living_population_norm",
+    "poi_total_norm"
+  ],
+  "demand_component_weights": {
+    "registered_population_norm": 0.25,
+    "registered_senior_population_norm": 0.25,
+    "living_population_norm": 0.25,
+    "poi_total_norm": 0.25
+  },
+  "demand_index_min": 0.008945188210594548,
+  "demand_index_mean": 0.2132331695287051,
+  "demand_index_max": 0.5278594727456603,
+  "status": "final: includes living population, registered population, registered senior population, and POI"
+}

@@ -1,0 +1,9 @@
+﻿variant,transform_family,threshold_top_fraction,vulnerable_hex_count,hidden_hex_count,vulnerable_jaccard_vs_baseline,hidden_jaccard_vs_baseline,vulnerable_replacement_rate,hidden_replacement_rate,shared_hidden_with_baseline,new_hidden_vs_baseline,dropped_hidden_vs_baseline,claim_use
+baseline_minmax_product,baseline,0.2,877,632,1.0,1.0,0.0,0.0,632,0,0,robustness_check_not_monte_carlo
+winsorize_1_99_product,winsorize_1_99_product,0.2,877,636,0.990919,0.993711,0.009081,0.006289,632,4,0,robustness_check_not_monte_carlo
+log1p_product,log1p_product,0.2,877,808,0.396497,0.424332,0.603503,0.575668,429,379,203,robustness_check_not_monte_carlo
+rank_product,rank_product,0.2,877,755,0.699612,0.762389,0.300388,0.237611,600,155,32,robustness_check_not_monte_carlo
+additive_minmax,additive_minmax,0.2,877,796,0.313858,0.310092,0.686142,0.689908,338,458,294,robustness_check_not_monte_carlo
+threshold_top_10pct,baseline_minmax_product,0.1,439,252,0.50057,0.398734,0.49943,0.601266,252,0,380,threshold_sensitivity_not_effect_claim
+threshold_top_20pct,baseline_minmax_product,0.2,877,632,1.0,1.0,0.0,0.0,632,0,0,threshold_sensitivity_not_effect_claim
+threshold_top_30pct,baseline_minmax_product,0.3,1315,1040,0.66692,0.607692,0.33308,0.392308,632,408,0,threshold_sensitivity_not_effect_claim

@@ -1,0 +1,16 @@
+{
+  "run_date": "2026-06-10",
+  "run_timestamp": "2026-06-10T16:57:45.688944+00:00",
+  "valid_hex_rows": 4383,
+  "baseline_vulnerable_count": 877,
+  "baseline_hidden_count": 632,
+  "e1_cap30_recompute_max_abs_diff_vs_stored_cost_m3": 2.2737367544323206e-13,
+  "e6_k1_max_abs_diff_vs_stored_access_cost_m3": 9.094947017729282e-13,
+  "hidden_count_range": [
+    632,
+    651
+  ],
+  "hidden_replacement_rate_max": 0.17721518987341772,
+  "spearman_vs_baseline_min": 0.8970887276404056,
+  "claim_boundary": "이 결과는 기준선 정의(cap, 계수, k근접 D)에 대한 민감도이며 정책 효과 추정이 아니다. 각 변형은 자기 universe에서 재정규화했다."
+}

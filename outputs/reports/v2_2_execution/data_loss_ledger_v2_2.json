@@ -1,0 +1,10 @@
+{
+  "hex_rows": 4551,
+  "analysis_valid_rows": 4383,
+  "vulnerable_rows": 877,
+  "hidden_rows": 632,
+  "diagnostics_rows": 632,
+  "ledger_rows": 12,
+  "s4_fixed_gpkg_label_ready": true,
+  "notes": "Threshold stages are marked separately from true data loss."
+}

@@ -1,0 +1,13 @@
+pytest
+ruff
+polars
+numpy
+pyyaml
+typer
+pandas
+pyarrow
+networkx
+shapely
+geopandas
+h3==4.4.2
+matplotlib>=3.10.9

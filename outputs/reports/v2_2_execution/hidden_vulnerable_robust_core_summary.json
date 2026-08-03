@@ -1,0 +1,8 @@
+{
+  "source": "data/derived/hex_vulnerability_final.parquet",
+  "any_normalization_hidden_rows": 1053,
+  "robust_core_hidden_rows": 429,
+  "baseline_hidden_rows": 632,
+  "normalization_sensitive_rows": 624,
+  "definition": "robust_core_hidden_flag requires hidden vulnerable under baseline minmax, winsorized cost, log1p cost, and rank cost variants."
+}

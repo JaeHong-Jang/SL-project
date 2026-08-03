@@ -1,0 +1,25 @@
+{
+  "source": ".\\data\\raw\\서울시등록인구_2025_4분기.xlsx",
+  "sheet": "2-1. 세대 및 인구상세",
+  "record_count": 428,
+  "district_count": 25,
+  "registered_population_total": 9579177,
+  "registered_senior_population_total": 1912751,
+  "registered_senior_share_total": 0.1996780099167183,
+  "duplicated_admin_name_count": 1,
+  "duplicated_admin_names": [
+    {
+      "district_name": "관악구",
+      "admin_name": "신사동",
+      "registered_population": 24296
+    },
+    {
+      "district_name": "강남구",
+      "admin_name": "신사동",
+      "registered_population": 15291
+    }
+  ],
+  "senior_age_definition": "65세 이상 총인구",
+  "spatial_status": "admin_boundary_required",
+  "status": "normalized: registered population table extracted; spatial allocation requires 행정동 boundary"
+}

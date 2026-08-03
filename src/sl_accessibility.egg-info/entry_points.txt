@@ -1,0 +1,2 @@
+[console_scripts]
+sl-accessibility = sl_accessibility.cli:app
