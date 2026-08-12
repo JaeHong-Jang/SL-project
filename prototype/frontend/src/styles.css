@@ -145,21 +145,10 @@ footer { border-top: 1px solid #e5e7eb; margin-top: 12px; padding-top: 8px; }
 }
 #weather-canvas { width: calc(100% - var(--panel-w)); height: 100%; }
 #weather-overlay { opacity: 0; transition: opacity 0.6s; }
-#weather-overlay.cloudy {
-  opacity: 1;
-  background:
-    radial-gradient(46% 32% at 20% 16%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 70%),
-    radial-gradient(52% 36% at 72% 30%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%),
-    radial-gradient(40% 30% at 45% 62%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 70%),
-    rgba(96, 108, 124, 0.22);
-  animation: cloud-drift 60s ease-in-out infinite alternate;
-}
+/* 흐림의 구름 자체는 캔버스 애니메이션으로 흘러간다 — 여기는 옅은 회색빛만 */
+#weather-overlay.cloudy { opacity: 1; background: rgba(96, 108, 124, 0.18); }
 #weather-overlay.rain { opacity: 1; background: rgba(71, 85, 105, 0.12); }
 #weather-overlay.snow { opacity: 1; background: rgba(148, 163, 184, 0.1); }
-@keyframes cloud-drift {
-  from { background-position: 0 0, 0 0, 0 0, 0 0; }
-  to { background-position: 160px 40px, -180px 30px, 120px -30px, 0 0; }
-}
 
 @media (max-width: 1100px) {
   :root { --panel-w: 300px; }

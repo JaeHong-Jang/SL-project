@@ -113,6 +113,40 @@ function wxSpawn(kind, anywhere) {
            r: 1.6 + Math.random() * 2.2, sp: 0.9 + Math.random() * 1.1, ph: Math.random() * Math.PI * 2 };
 }
 
+// 뭉게구름 스프라이트 (부드러운 원 그라데이션 여러 개를 겹쳐 만든다)
+function makeCloudSprite() {
+  const c = document.createElement("canvas");
+  c.width = 360; c.height = 160;
+  const g = c.getContext("2d");
+  const puffs = 5 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < puffs; i++) {
+    const px = 70 + (220 / puffs) * i + Math.random() * 26;
+    const py = 95 - Math.random() * 38;
+    const pr = 36 + Math.random() * 32;
+    const grad = g.createRadialGradient(px, py, pr * 0.15, px, py, pr);
+    grad.addColorStop(0, "rgba(255,255,255,0.95)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = grad;
+    g.beginPath();
+    g.arc(px, py, pr, 0, Math.PI * 2);
+    g.fill();
+  }
+  return c;
+}
+
+function wxSpawnCloud(anywhere) {
+  const w = wxCanvas.width, h = wxCanvas.height;
+  const scale = 0.7 + Math.random() * 1.3;
+  const sprite = makeCloudSprite();
+  return {
+    sprite, scale,
+    x: anywhere ? Math.random() * w : -sprite.width * scale - Math.random() * 120,
+    y: Math.random() * h * 0.72,
+    sp: 0.18 + Math.random() * 0.4,
+    alpha: 0.5 + Math.random() * 0.35,
+  };
+}
+
 function wxStop() {
   if (wxRAF) cancelAnimationFrame(wxRAF);
   wxRAF = null;
@@ -122,11 +156,21 @@ function wxStop() {
 
 function wxStart(kind) {
   wxResize();
-  wxDrops = Array.from({ length: kind === "rain" ? 170 : 130 }, () => wxSpawn(kind, true));
+  wxDrops = kind === "cloudy"
+    ? Array.from({ length: 8 }, () => wxSpawnCloud(true))
+    : Array.from({ length: kind === "rain" ? 170 : 130 }, () => wxSpawn(kind, true));
   const step = () => {
     const w = wxCanvas.width, h = wxCanvas.height;
     wxCtx.clearRect(0, 0, w, h);
-    if (kind === "rain") {
+    if (kind === "cloudy") {
+      for (const c of wxDrops) {
+        wxCtx.globalAlpha = c.alpha;
+        wxCtx.drawImage(c.sprite, c.x, c.y, c.sprite.width * c.scale, c.sprite.height * c.scale);
+        c.x += c.sp;
+        if (c.x > w + 40) Object.assign(c, wxSpawnCloud(false));
+      }
+      wxCtx.globalAlpha = 1;
+    } else if (kind === "rain") {
       wxCtx.strokeStyle = "rgba(96, 118, 145, 0.55)";
       wxCtx.lineWidth = 1.2;
       wxCtx.beginPath();
@@ -158,6 +202,7 @@ function wxStart(kind) {
 function applyWeather(w) {
   wxOverlay.className = w === "clear" ? "" : w;
   wxStop();
+  if (w === "cloudy") wxStart("cloudy");
   if (w === "rain") wxStart("rain");
   if (w === "snow") wxStart("snow");
 }
