@@ -29,7 +29,10 @@
 
 - 자료: `seoul_south_korea_copernicus_glo30_node_elevations.csv` (노드 165,300개)
 - 표시: `© European Union, contains modified Copernicus DEM data`
-- 용도: 보행 네트워크 구간별 경사 계산 → M1/M3 비용모형
+- 용도: Google 고도의 교차검증(QA), 그리고 재배포가 필요한 공개 산출물(웹 프로토타입 등)의
+  경사 재계산용 대체 소스
+- **주의:** 현재 M0~M3 접근비용 산출물의 경사는 Copernicus가 아니라 Google Elevation
+  기반(`walking_network_edges_with_slope_google.csv`, `elevation_source=google`)에서 계산되었다.
 
 ### 기상청 ASOS
 
@@ -57,12 +60,15 @@
   핵심 결과(4,383 / 877 / 632 / 429)의 재현에는 영향이 없다.
 - 이용을 원하면 서울시 빅데이터캠퍼스에서 직접 신청·취득해야 한다.
 
-### Google Elevation API — 보조 고도
+### Google Elevation API — 고도 (현행 비용모형의 경사 소스)
 
 - 파일: `data/walking_network_nodes_with_elevation.csv`,
   `data/walking_network_edges_with_slope_google.csv`
 - API 이용약관상 **재배포 제한**. 로컬에서 직접 재생성해야 한다.
-- 메인 고도는 Copernicus GLO-30이며 Google 값은 비교 검증용 보조 자료다.
+- 현재 M0~M3 접근비용 산출물(`data/interim/walking_edge_costs.parquet` 및 이를 이용한
+  발표 수치)의 경사는 이 Google 기반 파일에서 계산되었다. Copernicus GLO-30은
+  교차검증용이며, 재배포가 필요한 공개 산출물은 Copernicus 기반으로 경사를
+  재계산해 사용한다.
 
 ## 코드 라이선스
 
