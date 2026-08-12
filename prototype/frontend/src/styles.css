@@ -97,6 +97,7 @@ footer { border-top: 1px solid #e5e7eb; margin-top: 12px; padding-top: 8px; }
 .legend-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
 .legend-steps .step { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: #374151; margin: 3px 0; }
 .legend-steps .sw { width: 20px; height: 9px; border-radius: 2px; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); }
+.legend-steps .legal-sw { width: 12px; height: 12px; border-radius: 50%; background: rgba(37,99,235,0.08); border: 1.5px dashed #2563eb; box-shadow: none; }
 
 /* 핀 마커 */
 .pin { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); line-height: 0; }

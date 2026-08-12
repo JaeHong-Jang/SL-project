@@ -67,6 +67,28 @@ function setDestPin(coords) {
   }
 }
 
+// 직선거리 (법정 기준 방식) — haversine
+function straightM(a, b) {
+  const R = 6371000, rad = Math.PI / 180;
+  const dLat = (b[1] - a[1]) * rad, dLng = (b[0] - a[0]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 +
+    Math.cos(a[1] * rad) * Math.cos(b[1] * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// 정류장 중심 반경 400m 원 (법정 커버리지 방식)
+function circleCoords(lng, lat, radiusM = 400, n = 64) {
+  const rad = Math.PI / 180;
+  const dLat = radiusM / 111320;
+  const dLng = radiusM / (111320 * Math.cos(lat * rad));
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = (i / n) * 2 * Math.PI;
+    out.push([lng + dLng * Math.cos(t), lat + dLat * Math.sin(t)]);
+  }
+  return out;
+}
+
 // 경사 → 색: 뚜렷한 단계 구분 (범례와 반드시 동기화 — index.html legend-steps)
 const GRADE_CLASSES = [
   { max: 5, color: "#2e7d32" },   // 0–5% 초록
@@ -84,9 +106,21 @@ function gradeColor(g) {
 map.on("load", async () => {
   // 소스
   map.addSource("stops", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addSource("legal", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("m0-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("m3-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("snap-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+
+  // 법정 기준 시각화: 정류장 반경 400m 원 + 출발지-정류장 직선 (경로 아래에 깔림)
+  map.addLayer({
+    id: "legal-fill", type: "fill", source: "legal",
+    filter: ["==", ["geometry-type"], "Polygon"],
+    paint: { "fill-color": "#2563eb", "fill-opacity": 0.05 },
+  });
+  map.addLayer({
+    id: "legal-line", type: "line", source: "legal",
+    paint: { "line-color": "#2563eb", "line-width": 1.6, "line-dasharray": [2, 2], "line-opacity": 0.65 },
+  });
 
   // 정류장 (줌 13부터)
   map.addLayer({
@@ -249,6 +283,23 @@ function render(data) {
       properties: { color: gradeColor(s.grade_abs_percent), grade: s.grade_abs_percent },
     })),
   });
+  // 법정 기준: 정류장 400m 원 + 직선, 카드의 직선거리 행
+  const o = [state.origin.lng, state.origin.lat];
+  let straightText = "—";
+  if (destMarker) {
+    const d = destMarker.getLngLat();
+    const s = straightM(o, [d.lng, d.lat]);
+    straightText = `${s.toFixed(0)}m ${s <= 400 ? "(400m 이내 — 법정 기준 양호)" : "(400m 초과)"}`;
+    map.getSource("legal").setData({
+      type: "FeatureCollection",
+      features: [
+        { type: "Feature", geometry: { type: "Polygon", coordinates: [circleCoords(d.lng, d.lat)] }, properties: {} },
+        { type: "Feature", geometry: { type: "LineString", coordinates: [o, [d.lng, d.lat]] }, properties: {} },
+      ],
+    });
+  }
+  document.getElementById("cmp-straight").textContent = straightText;
+
   // 스냅 연결선 (입력점 → 스냅 노드)
   map.getSource("snap-lines").setData({
     type: "FeatureCollection",
@@ -300,7 +351,7 @@ function render(data) {
     ? `+${data.comparison.detour_m}m (+${data.comparison.detour_percent}%)`
     : "동일 경로, 비용만 증가";
   document.getElementById("cmp-grades").textContent =
-    `M0 ${data.m0.max_grade_abs_percent}% · M3 ${data.m3.max_grade_abs_percent}%`;
+    `최단경로 ${data.m0.max_grade_abs_percent}% · 부담경로 ${data.m3.max_grade_abs_percent}%`;
 
   const bd = data.breakdown;
   document.getElementById("bd-physical").textContent = fmtM(bd.physical_m);
@@ -368,7 +419,7 @@ document.getElementById("reset").addEventListener("click", () => {
   state.requestToken++;
   if (originMarker) { originMarker.remove(); originMarker = null; }
   setDestPin(null);
-  ["m0-route", "m3-route", "snap-lines"].forEach((s) =>
+  ["m0-route", "m3-route", "snap-lines", "legal"].forEach((s) =>
     map.getSource(s)?.setData({ type: "FeatureCollection", features: [] }));
   document.getElementById("result").hidden = true;
   document.getElementById("error-box").hidden = true;
@@ -381,7 +432,12 @@ document.getElementById("reset").addEventListener("click", () => {
 });
 
 // 레이어 토글
-const toggles = [["toggle-m0", ["m0-casing", "m0-line"]], ["toggle-m3", ["m3-casing", "m3-line"]], ["toggle-stops", ["stops"]]];
+const toggles = [
+  ["toggle-m0", ["m0-casing", "m0-line"]],
+  ["toggle-m3", ["m3-casing", "m3-line"]],
+  ["toggle-legal", ["legal-fill", "legal-line"]],
+  ["toggle-stops", ["stops"]],
+];
 toggles.forEach(([id, layers]) => {
   document.getElementById(id).addEventListener("change", (e) => {
     layers.forEach((l) =>

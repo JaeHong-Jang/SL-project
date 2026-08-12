@@ -105,8 +105,8 @@ def find_cases(engine: RouteEngine) -> list[dict]:
                 best1 = (score, case_payload(
                     "slope_avoidance",
                     "경사 회피 — 돌아가더라도 완만한 길",
-                    f"맑음 기준. 거리 최단경로(M0)는 최대 경사 {m0_max:.0f}% 구간(빨강 점선)을 지나지만, "
-                    f"부담 최소경로(M3)는 최대 {m3_max:.0f}%의 완만한 길(초록 실선)로 우회한다.",
+                    f"맑음 기준. 거리 최단경로는 최대 경사 {m0_max:.0f}% 구간(빨강 점선)을 지나지만, "
+                    f"부담 최소경로는 최대 {m3_max:.0f}%의 완만한 길(초록 실선)로 우회한다.",
                     (lng, lat), stop_id, "clear", r_clear,
                 ))
         try:
@@ -121,7 +121,7 @@ def find_cases(engine: RouteEngine) -> list[dict]:
                 best2 = (gap, case_payload(
                     "weather_reroute",
                     "악천후 경로 변화 — 눈이 오면 다른 길",
-                    "같은 출발지·정류장에서 맑음 M3와 눈 M3의 경로가 달라진다.",
+                    "같은 출발지·정류장인데 맑음일 때와 눈이 올 때의 부담 최소경로가 서로 다르다.",
                     (lng, lat), stop_id, "snow", r_snow,
                 ))
     case1 = best1[1] if best1 else None

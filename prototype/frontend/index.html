@@ -11,7 +11,7 @@
       <aside id="panel">
         <header>
           <h1>보행부담 경로 프로토타입</h1>
-          <p class="subtitle">거리 최단경로 (M0) vs 경사·날씨 부담 최소경로 (M3)</p>
+          <p class="subtitle">거리 최단경로 vs 경사·날씨 부담 최소경로</p>
         </header>
 
         <section id="od-section" aria-label="출발지와 도착지">
@@ -45,8 +45,9 @@
 
         <section aria-label="레이어 표시">
           <h2>레이어</h2>
-          <label><input type="checkbox" id="toggle-m0" checked /> 거리 최단경로 (M0)</label>
-          <label><input type="checkbox" id="toggle-m3" checked /> 부담 최소경로 (M3)</label>
+          <label><input type="checkbox" id="toggle-m0" checked /> 거리 최단경로 (점선)</label>
+          <label><input type="checkbox" id="toggle-m3" checked /> 부담 최소경로 (실선)</label>
+          <label><input type="checkbox" id="toggle-legal" checked /> 법정 기준 400m 반경·직선</label>
           <label><input type="checkbox" id="toggle-stops" checked /> 정류장</label>
         </section>
 
@@ -56,7 +57,8 @@
           <h2>두 경로 비교</h2>
           <table class="cmp">
             <tbody>
-              <tr><th>거리 최단경로 (M0)</th><td id="cmp-m0"></td></tr>
+              <tr><th>직선거리 (법정 기준 방식)</th><td id="cmp-straight"></td></tr>
+              <tr><th>거리 최단경로</th><td id="cmp-m0"></td></tr>
               <tr><th>부담 최소경로 실제 보행거리</th><td id="cmp-m3-phys"></td></tr>
               <tr><th>부담 최소경로 거리등가 부담</th><td id="cmp-m3-eq"></td></tr>
               <tr><th>우회</th><td id="cmp-detour"></td></tr>
@@ -102,6 +104,7 @@
           <div class="step"><span class="sw" style="background:#f57c00"></span>10–20% 가파름</div>
           <div class="step"><span class="sw" style="background:#d32f2f"></span>20–30% 급경사</div>
           <div class="step"><span class="sw" style="background:#7f1d1d"></span>30%+ (비용 상한)</div>
+          <div class="step"><span class="sw legal-sw"></span>법정 기준 400m 반경(직선)</div>
         </div>
       </div>
     </div>
