@@ -74,20 +74,30 @@ function setDestPin(coords) {
     // 도착지가 사라지면 법정 버퍼·라벨도 지운다
     try { map.getSource("legal")?.setData({ type: "FeatureCollection", features: [] }); } catch { /* 지도 로드 전 */ }
     setLegalLabel(null, false);
+    setStraightLabel(null, "", false);
   }
 }
 
 let legalLabelMarker = null;
-function setLegalLabel(coords, over) {
-  if (legalLabelMarker) legalLabelMarker.remove();
-  legalLabelMarker = null;
-  if (!coords) return;
+let straightLabelMarker = null;
+
+function _pillMarker(current, coords, text, over, extraClass) {
+  if (current) current.remove();
+  if (!coords) return null;
   const el = document.createElement("div");
-  el.className = "legal-label" + (over ? " over" : "");
-  el.textContent = "법정 기준 400m";
-  legalLabelMarker = new maplibregl.Marker({ element: el, anchor: "bottom" })
-    .setLngLat(coords).addTo(map);
+  el.className = `legal-label${extraClass ? ` ${extraClass}` : ""}${over ? " over" : ""}`;
+  el.textContent = text;
+  const m = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat(coords).addTo(map);
   if (!document.getElementById("toggle-legal").checked) el.style.display = "none";
+  return m;
+}
+
+function setLegalLabel(coords, over) {
+  legalLabelMarker = _pillMarker(legalLabelMarker, coords, "법정 기준 400m", over);
+}
+
+function setStraightLabel(coords, text, over) {
+  straightLabelMarker = _pillMarker(straightLabelMarker, coords, text, over, "straight-label");
 }
 
 // ---- 날씨 효과 (구름 오버레이 + 비/눈 캔버스 애니메이션) ----
@@ -443,12 +453,14 @@ function render(data) {
         { type: "Feature", geometry: { type: "LineString", coordinates: [o, [d.lng, d.lat]] }, properties: {} },
       ],
     });
-    // 체감 거리가 400m를 넘으면 버퍼를 빨간색으로
-    const over = data.comparison.threshold_status !== "within";
+    // 색 판정은 법정 기준 그 자체: 직선거리가 400m를 넘으면 버퍼·직선·라벨 빨강
+    const over = s > 400;
     const bufColor = over ? "#c62828" : "#2563eb";
     map.setPaintProperty("legal-fill", "fill-color", bufColor);
     map.setPaintProperty("legal-line", "line-color", bufColor);
     setLegalLabel([d.lng, d.lat + 400 / 111320], over);
+    // 직선 중간에 잰 값 표시
+    setStraightLabel([(o[0] + d.lng) / 2, (o[1] + d.lat) / 2], `직선 ${s.toFixed(0)}m`, over);
   }
   document.getElementById("cmp-straight").textContent = straightText;
 
@@ -611,9 +623,11 @@ toggles.forEach(([id, layers]) => {
   document.getElementById(id).addEventListener("change", (e) => {
     layers.forEach((l) =>
       map.getLayer(l) && map.setLayoutProperty(l, "visibility", e.target.checked ? "visible" : "none"));
-    // 버퍼 라벨(HTML 마커)은 레이어가 아니므로 별도 처리
-    if (id === "toggle-legal" && legalLabelMarker) {
-      legalLabelMarker.getElement().style.display = e.target.checked ? "" : "none";
+    // 버퍼·직선 라벨(HTML 마커)은 레이어가 아니므로 별도 처리
+    if (id === "toggle-legal") {
+      for (const m of [legalLabelMarker, straightLabelMarker]) {
+        if (m) m.getElement().style.display = e.target.checked ? "" : "none";
+      }
     }
   });
 });

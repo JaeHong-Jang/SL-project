@@ -137,6 +137,7 @@ footer { border-top: 1px solid #e5e7eb; margin-top: 12px; padding-top: 8px; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); white-space: nowrap;
 }
 .legal-label.over { border-color: #c62828; color: #c62828; }
+.legal-label.straight-label { font-size: 11px; padding: 1px 7px; font-weight: 600; }
 
 /* 날씨 효과 (지도 위 오버레이 — 클릭 통과) */
 #weather-overlay, #weather-canvas {
