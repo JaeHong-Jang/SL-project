@@ -37,7 +37,10 @@ def data_version() -> str:
         return json.load(f)["generated_at"]
 
 
-def nearest_stop(engine: RouteEngine, lng: float, lat: float, max_m: float = 800.0) -> str | None:
+def nearest_stops(
+    engine: RouteEngine, lng: float, lat: float, k: int = 3, max_m: float = 800.0
+) -> list[str]:
+    """가까운 정류장 최대 k곳 (경로 분기 사례를 넓게 탐색하기 위함)."""
     from pyproj import Transformer
     from scipy.spatial import cKDTree
 
@@ -48,8 +51,9 @@ def nearest_stop(engine: RouteEngine, lng: float, lat: float, max_m: float = 800
         engine._stop_ids = engine.stops.index.to_numpy()
         engine._tf_to5179 = tf
     x, y = engine._tf_to5179.transform(lng, lat)
-    d, i = engine._stop_tree.query([x, y], distance_upper_bound=max_m)
-    return str(engine._stop_ids[i]) if np.isfinite(d) else None
+    d, i = engine._stop_tree.query([x, y], k=k, distance_upper_bound=max_m)
+    d, i = np.atleast_1d(d), np.atleast_1d(i)
+    return [str(engine._stop_ids[j]) for dj, j in zip(d, i) if np.isfinite(dj)]
 
 
 def case_payload(case_id: str, title: str, description: str, origin, stop_id, weather, r) -> dict:
@@ -76,68 +80,80 @@ def find_cases(engine: RouteEngine) -> list[dict]:
     sample = steep.sample(min(400, len(steep)), random_state=20260812)
 
     # 첫 발견이 아니라 전체 표본에서 가장 극적인 사례를 고른다.
-    best1 = None  # (detour_percent, payload) — 경사 회피가 가장 명백한 곳
-    best2 = None  # (경로변경 구간 부담 격차, payload) — 눈 재경로가 가장 명백한 곳
+    best1 = None  # (점수, payload) — 경사 회피가 가장 명백한 곳
+    best2 = None  # (경로 격차, payload) — 눈 재경로가 가장 명백한 곳
+    best3 = None  # (우회 m, payload) — 경로가 갈라지는 400m 재분류
     for row in sample.itertuples():
         lng, lat = float(engine.node_lonlat[row.u_idx][0]), float(engine.node_lonlat[row.u_idx][1])
-        stop_id = nearest_stop(engine, lng, lat)
-        if stop_id is None:
-            continue
-        try:
-            r_clear = engine.route(lng, lat, stop_id, "clear")
-        except RouteError:
-            continue
-        if r_clear["m0"]["network_distance_m"] < 150:
-            continue
-        det = r_clear["comparison"]["detour_percent"]
-        m0_max = r_clear["m0"]["max_grade_abs_percent"]
-        m3_max = r_clear["m3"]["max_grade_abs_percent"]
-        # "왜 M3가 나은가"가 눈에 보이려면: M0는 가파르고(≥15%) M3는 완만해야 한다.
-        # 점수 = 경사 대비(주) + 우회율(보조). 거리도 어느 정도 길어야 지도에서 잘 보인다.
-        if (
-            r_clear["comparison"]["path_changed"]
-            and det >= 3
-            and r_clear["m0"]["network_distance_m"] >= 250
-            and m0_max >= 15
-        ):
-            score = (m0_max - m3_max) + det * 0.5
-            if best1 is None or score > best1[0]:
-                best1 = (score, case_payload(
-                    "slope_avoidance",
-                    "경사 회피 — 돌아가더라도 완만한 길",
-                    f"맑음 기준. 거리 최단경로는 최대 경사 {m0_max:.0f}% 구간(빨강 점선)을 지나지만, "
-                    f"부담 최소경로는 최대 {m3_max:.0f}%의 완만한 길(초록 실선)로 우회한다.",
-                    (lng, lat), stop_id, "clear", r_clear,
-                ))
-        try:
-            r_snow = engine.route(lng, lat, stop_id, "snow")
-        except RouteError:
-            continue
-        if r_snow["m3"]["edge_ids"] != r_clear["m3"]["edge_ids"]:
-            gap = abs(
-                r_snow["m3"]["physical_distance_m"] - r_clear["m3"]["physical_distance_m"]
-            )
-            if best2 is None or gap > best2[0]:
-                best2 = (gap, case_payload(
-                    "weather_reroute",
-                    "악천후 경로 변화 — 눈이 오면 다른 길",
-                    "같은 출발지·정류장인데 맑음일 때와 눈이 올 때의 부담 최소경로가 서로 다르다.",
-                    (lng, lat), stop_id, "snow", r_snow,
-                ))
+        for si, stop_id in enumerate(nearest_stops(engine, lng, lat)):
+            try:
+                r_clear = engine.route(lng, lat, stop_id, "clear")
+            except RouteError:
+                continue
+            cmp_ = r_clear["comparison"]
+            m0_max = r_clear["m0"]["max_grade_abs_percent"]
+            m3_max = r_clear["m3"]["max_grade_abs_percent"]
+
+            # 사례 3 후보: 재분류 + 경로 분기 (두 선이 실제로 갈라져 보여야 함)
+            if cmp_["threshold_status"] == "reclassified" and cmp_["path_changed"] and cmp_["detour_m"] >= 15:
+                if best3 is None or cmp_["detour_m"] > best3[0]:
+                    best3 = (cmp_["detour_m"], case_payload(
+                        "reclassified_400",
+                        "400m 재분류 — 기준으로는 양호, 부담으로는 초과",
+                        "지도상 거리는 400m 이내라 현행 기준으로는 양호지만, 부담을 반영하면 400m를 넘고 "
+                        "짧은 길 대신 완만한 길로 우회한다.",
+                        (lng, lat), stop_id, "clear", r_clear,
+                    ))
+
+            if si != 0 or r_clear["m0"]["network_distance_m"] < 150:
+                continue
+
+            # 사례 1: 경사 대비 최대 (짧은 길은 가파르고, 추천 길은 완만)
+            det = cmp_["detour_percent"]
+            if cmp_["path_changed"] and det >= 3 and r_clear["m0"]["network_distance_m"] >= 250 and m0_max >= 15:
+                score = (m0_max - m3_max) + det * 0.5
+                if best1 is None or score > best1[0]:
+                    best1 = (score, case_payload(
+                        "slope_avoidance",
+                        "경사 회피 — 돌아가더라도 완만한 길",
+                        f"맑음 기준. 거리 최단경로는 최대 경사 {m0_max:.0f}% 구간(빨강 점선)을 지나지만, "
+                        f"부담 최소경로는 최대 {m3_max:.0f}%의 완만한 길(초록 실선)로 우회한다.",
+                        (lng, lat), stop_id, "clear", r_clear,
+                    ))
+
+            # 사례 2: 눈에서 경로가 바뀌는 곳 (격차 최대)
+            try:
+                r_snow = engine.route(lng, lat, stop_id, "snow")
+            except RouteError:
+                continue
+            if r_snow["m3"]["edge_ids"] != r_clear["m3"]["edge_ids"]:
+                gap = abs(r_snow["m3"]["physical_distance_m"] - r_clear["m3"]["physical_distance_m"])
+                if best2 is None or gap > best2[0]:
+                    best2 = (gap, case_payload(
+                        "weather_reroute",
+                        "악천후 경로 변화 — 눈이 오면 다른 길",
+                        "같은 출발지·정류장인데 맑음일 때와 눈이 올 때의 부담 최소경로가 서로 다르다.",
+                        (lng, lat), stop_id, "snow", r_snow,
+                    ))
     case1 = best1[1] if best1 else None
     case2 = best2[1] if best2 else None
+    searched_case3 = best3[1] if best3 else None
 
-    origin = SEED_RECLASSIFIED["origin"]
-    cand = engine.stops[engine.stops["name"].str.contains(SEED_RECLASSIFIED["hint"], na=False)]
-    stop_id = str(cand.index[0])
-    r = engine.route(origin[0], origin[1], stop_id, "clear")
-    assert r["comparison"]["threshold_status"] == "reclassified", "시드 사례가 reclassified가 아님"
-    case3 = case_payload(
-        "reclassified_400",
-        "400m 재분류 — 기준으로는 양호, 부담으로는 초과",
-        "금천구 시흥5동(호암산 자락). 지도상 거리는 400m 이내지만 경사·날씨 부담을 반영하면 400m를 넘는다.",
-        origin, stop_id, "clear", r,
-    )
+    # 경로가 갈라지는 재분류 사례를 우선하고, 없을 때만 시흥5동 시드로 폴백
+    if searched_case3 is not None:
+        case3 = searched_case3
+    else:
+        origin = SEED_RECLASSIFIED["origin"]
+        cand = engine.stops[engine.stops["name"].str.contains(SEED_RECLASSIFIED["hint"], na=False)]
+        stop_id = str(cand.index[0])
+        r = engine.route(origin[0], origin[1], stop_id, "clear")
+        assert r["comparison"]["threshold_status"] == "reclassified", "시드 사례가 reclassified가 아님"
+        case3 = case_payload(
+            "reclassified_400",
+            "400m 재분류 — 기준으로는 양호, 부담으로는 초과",
+            "금천구 시흥5동(호암산 자락). 지도상 거리는 400m 이내지만 경사·날씨 부담을 반영하면 400m를 넘는다.",
+            origin, stop_id, "clear", r,
+        )
 
     case4 = find_senior_case(engine)
 
@@ -149,32 +165,40 @@ def find_cases(engine: RouteEngine) -> list[dict]:
 
 
 def find_senior_case(engine: RouteEngine):
-    """노인 시설을 출발지로, 400m 재분류이면서 부담 증가가 최대인 시설을 고른다."""
+    """노인 시설 출발 400m 재분류 사례. 경로가 갈라지는 시설을 우선, 없으면 부담 증가 최대."""
     fac = pd.read_csv(ROOT / "data" / "senior_welfare_with_coords.csv", low_memory=False).dropna(
         subset=["lon", "lat"]
     )
-    best = None  # (부담 증가, 시설명, payload)
+    best_changed = None  # (우회 m, 이름) — 재분류 + 경로 분기
+    best_same = None     # (부담 증가, 이름) — 재분류 (폴백)
     for row in fac.itertuples():
-        stop_id = nearest_stop(engine, float(row.lon), float(row.lat))
-        if stop_id is None:
-            continue
-        try:
-            r = engine.route(float(row.lon), float(row.lat), stop_id, "clear")
-        except RouteError:
-            continue
-        if r["comparison"]["threshold_status"] != "reclassified":
-            continue
-        inc = r["m3"]["equivalent_distance_m"] - r["m0"]["network_distance_m"]
-        key = (inc, str(row.기관명칭))  # 동률 시 이름으로 결정적 tie-break
-        if best is None or key > best[0]:
-            best = (key, case_payload(
+        for stop_id in nearest_stops(engine, float(row.lon), float(row.lat)):
+            try:
+                r = engine.route(float(row.lon), float(row.lat), stop_id, "clear")
+            except RouteError:
+                continue
+            if r["comparison"]["threshold_status"] != "reclassified":
+                continue
+            payload = case_payload(
                 "senior_facility",
                 f"노인시설 400m 재분류 — {row.기관명칭}",
                 f"{row.관할_자치구} {row.기관명칭}({row.시설종류}). 현행 기준으로는 정류장 접근 양호지만 "
                 "경사·날씨 부담을 반영하면 400m를 넘는다.",
                 (float(row.lon), float(row.lat)), stop_id, "clear", r,
-            ))
-    return best[1] if best else None
+            )
+            if r["comparison"]["path_changed"] and r["comparison"]["detour_m"] >= 10:
+                key = (r["comparison"]["detour_m"], str(row.기관명칭))
+                if best_changed is None or key > best_changed[0]:
+                    best_changed = (key, payload)
+            else:
+                inc = r["m3"]["equivalent_distance_m"] - r["m0"]["network_distance_m"]
+                key = (inc, str(row.기관명칭))
+                if best_same is None or key > best_same[0]:
+                    best_same = (key, payload)
+    if best_changed:
+        return best_changed[1]
+    print("[알림] 경로가 갈라지는 노인시설 재분류 사례 없음 — 부담 증가 최대 시설로 폴백")
+    return best_same[1] if best_same else None
 
 
 def verify(engine: RouteEngine) -> None:
