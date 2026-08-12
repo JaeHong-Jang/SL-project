@@ -1,15 +1,16 @@
-"""단계 0 — 공개 안전 경사망 생성 + Copernicus 노이즈 진단.
+"""단계 0 — 공개 안전 경사망 생성 + Copernicus 노이즈 진단·완화.
 
 docs/prototype_plan.md v2의 단계 0을 구현한다.
 
 - 입력 엣지 파일에서 OSM 기원 열(u, v, key, length_m, geometry_wkt)만 읽는다.
 - 노드의 elevation_copernicus_m만으로 방향·절대경사를 재계산한다.
 - Google 고도·경사 열은 산출물에 복사하지 않는다(로컬 비교 보고서에만 사용).
-- 엣지 길이 구간별 경사 분포로 GLO-30 해상도 노이즈를 진단한다.
+- GLO-30 30m 격자 양자화 노이즈를 길이 구간별로 진단하고,
+  네트워크 이웃 고도 스무딩(IDW)으로 완화한다(게이트 결정: 투트랙 분리, 웹용 데이터 전용).
 
 산출물:
-- data/processed/prototype/edges_base.parquet  (유효 엣지만, google 열 0건)
-- data/processed/prototype/build_report.json   (QA·노이즈 진단·Google 대비 비교)
+- data/processed/prototype/edges_base.parquet  (유효 엣지만, 스무딩 적용 경사, google 열 0건)
+- data/processed/prototype/build_report.json   (원값/완화 후 QA·노이즈 진단·Google 대비 비교)
 """
 
 from __future__ import annotations
@@ -49,12 +50,88 @@ def grade_stats(series: pd.Series) -> dict:
     }
 
 
+def compute_grades(edges: pd.DataFrame, elev: pd.Series) -> pd.DataFrame:
+    """엣지 양끝 고도차로 방향·절대경사(%)를 계산해 새 프레임으로 반환한다."""
+    out = edges[["edge_id", "u", "v", "length_m"]].copy()
+    out["elev_u"] = out["u"].map(elev)
+    out["elev_v"] = out["v"].map(elev)
+    out["grade_percent"] = (out["elev_v"] - out["elev_u"]) / out["length_m"] * 100.0
+    out["grade_abs_percent"] = out["grade_percent"].abs()
+    return out
+
+
+def smooth_elevations(
+    edges: pd.DataFrame, elev: pd.Series, *, max_len: float, alpha: float, passes: int
+) -> pd.Series:
+    """네트워크 이웃 IDW로 노드 고도를 스무딩한다 (짧은 링크의 양자화 스텝 억제)."""
+    adj = pd.concat(
+        [
+            edges[["u", "v", "length_m"]].rename(columns={"u": "a", "v": "b"}),
+            edges[["v", "u", "length_m"]].rename(columns={"v": "a", "u": "b"}),
+        ],
+        ignore_index=True,
+    )
+    adj = adj[(adj["length_m"] > 0) & (adj["length_m"] <= max_len)]
+    adj["w"] = 1.0 / adj["length_m"].clip(lower=5.0)
+
+    cur = elev.copy()
+    for _ in range(passes):
+        e = adj["b"].map(cur)
+        ok = e.notna()
+        we = (adj.loc[ok, "w"] * e[ok]).groupby(adj.loc[ok, "a"]).sum()
+        ws = adj.loc[ok, "w"].groupby(adj.loc[ok, "a"]).sum()
+        nbr_mean = we / ws
+        nxt = cur.copy()
+        common = nxt.index.intersection(nbr_mean.index)
+        base = nxt.loc[common]
+        blended = alpha * base + (1.0 - alpha) * nbr_mean.loc[common]
+        # 원 고도가 결측인 노드는 스무딩으로 채우지 않는다(결측 정책 보존).
+        nxt.loc[common] = blended.where(base.notna(), np.nan)
+        cur = nxt
+    return cur
+
+
+def bucket_diagnostics(
+    g: pd.DataFrame, google: pd.Series, bucket_edges: list, error_grade: float
+) -> list[dict]:
+    labels = [
+        f"{lo:g}-{hi:g}m" if np.isfinite(hi) else f">={lo:g}m"
+        for lo, hi in zip(bucket_edges[:-1], bucket_edges[1:])
+    ]
+    pool = g[g["grade_abs_percent"].notna()].copy()
+    pool["len_bucket"] = pd.cut(pool["length_m"], bins=bucket_edges, labels=labels, right=False)
+    pool["google"] = google.reindex(pool.index)
+    rows = []
+    for b in labels:
+        sub = pool[pool["len_bucket"] == b]
+        gg = sub[sub["google"].notna() & (sub["google"] <= error_grade)]
+        rows.append(
+            {
+                "bucket": b,
+                "edge_count": int(len(sub)),
+                "copernicus": grade_stats(sub["grade_abs_percent"]),
+                "google": grade_stats(sub["google"]),
+                "over_100pct_copernicus": int((sub["grade_abs_percent"] > error_grade).sum()),
+                "pearson_vs_google": round(float(gg["grade_abs_percent"].corr(gg["google"])), 4)
+                if len(gg) > 2
+                else None,
+                "spearman_vs_google": round(
+                    float(gg["grade_abs_percent"].rank().corr(gg["google"].rank())), 4
+                )
+                if len(gg) > 2
+                else None,
+            }
+        )
+    return rows
+
+
 def main() -> None:
     cfg = load_config()
     out_dir = ROOT / cfg["paths"]["output_dir"]
     out_dir.mkdir(parents=True, exist_ok=True)
     error_grade = float(cfg["slope"]["error_exclude_grade_abs_percent"])
     bucket_edges = list(cfg["noise_diagnostics"]["length_buckets"]) + [float("inf")]
+    mit = cfg["noise_mitigation"]
 
     edges = pd.read_csv(
         ROOT / cfg["paths"]["edges_csv"],
@@ -62,74 +139,64 @@ def main() -> None:
         low_memory=False,
     )
     edges["edge_id"] = edges.index.astype("int64")
+    google_ref = edges[GOOGLE_COMPARE_COL]
     nodes = pd.read_csv(
         ROOT / cfg["paths"]["nodes_csv"],
         usecols=["node_id", "elevation_copernicus_m"],
         low_memory=False,
     )
-    elev = nodes.set_index("node_id")["elevation_copernicus_m"]
-
+    elev_raw = nodes.set_index("node_id")["elevation_copernicus_m"]
     input_rows = len(edges)
-    edges["elev_u_cop"] = edges["u"].map(elev)
-    edges["elev_v_cop"] = edges["v"].map(elev)
 
-    missing_node_ref = edges["u"].isin(elev.index) & edges["v"].isin(elev.index)
+    # --- 1) 원값 진단 ---
+    raw = compute_grades(edges, elev_raw)
+    raw_diag = {
+        "overall": grade_stats(raw.loc[raw["grade_abs_percent"] <= error_grade, "grade_abs_percent"]),
+        "over_100pct": int((raw["grade_abs_percent"] > error_grade).sum()),
+        "by_length_bucket": bucket_diagnostics(raw, google_ref, bucket_edges, error_grade),
+    }
+
+    # --- 2) 노이즈 완화: 네트워크 이웃 IDW 스무딩 ---
+    elev_smooth = smooth_elevations(
+        edges,
+        elev_raw,
+        max_len=float(mit["neighbor_max_length_m"]),
+        alpha=float(mit["self_weight_alpha"]),
+        passes=int(mit["passes"]),
+    )
+    sm = compute_grades(edges, elev_smooth)
+    mit_diag = {
+        "overall": grade_stats(sm.loc[sm["grade_abs_percent"] <= error_grade, "grade_abs_percent"]),
+        "over_100pct": int((sm["grade_abs_percent"] > error_grade).sum()),
+        "by_length_bucket": bucket_diagnostics(sm, google_ref, bucket_edges, error_grade),
+    }
+
+    # --- 3) 유효성 판정 (스무딩 후 기준) 및 산출물 저장 ---
+    missing_node_ref = ~(edges["u"].isin(elev_raw.index) & edges["v"].isin(elev_raw.index))
     nonpositive_length = edges["length_m"] <= 0
-    missing_elev = edges["elev_u_cop"].isna() | edges["elev_v_cop"].isna()
+    missing_elev = sm["elev_u"].isna() | sm["elev_v"].isna()
+    over_error = sm["grade_abs_percent"] > error_grade
+    valid = ~missing_node_ref & ~nonpositive_length & ~missing_elev & ~over_error
 
-    edges["grade_percent_cop"] = (
-        (edges["elev_v_cop"] - edges["elev_u_cop"]) / edges["length_m"] * 100.0
-    )
-    edges["grade_abs_percent_cop"] = edges["grade_percent_cop"].abs()
-    over_error = edges["grade_abs_percent_cop"] > error_grade
-
-    valid = missing_node_ref & ~nonpositive_length & ~missing_elev & ~over_error
-    valid_edges = edges[valid].copy()
-
-    # --- 노이즈 진단: 길이 구간별 경사 분포 (Copernicus vs Google) ---
-    labels = [
-        f"{lo:g}-{hi:g}m" if np.isfinite(hi) else f">={lo:g}m"
-        for lo, hi in zip(bucket_edges[:-1], bucket_edges[1:])
-    ]
-    diag_pool = edges[missing_node_ref & ~nonpositive_length & ~missing_elev].copy()
-    diag_pool["len_bucket"] = pd.cut(
-        diag_pool["length_m"], bins=bucket_edges, labels=labels, right=False
-    )
-    bucket_report = []
-    for b in labels:
-        sub = diag_pool[diag_pool["len_bucket"] == b]
-        bucket_report.append(
-            {
-                "bucket": b,
-                "edge_count": int(len(sub)),
-                "copernicus": grade_stats(sub["grade_abs_percent_cop"]),
-                "google": grade_stats(sub[GOOGLE_COMPARE_COL]),
-                "over_100pct_copernicus": int((sub["grade_abs_percent_cop"] > error_grade).sum()),
-                "over_100pct_google": int((sub[GOOGLE_COMPARE_COL] > error_grade).sum()),
-            }
-        )
-
-    # --- Google 대비 상관 (양쪽 모두 유효한 엣지) ---
-    both = edges[valid & edges[GOOGLE_COMPARE_COL].notna() & (edges[GOOGLE_COMPARE_COL] <= error_grade)]
-    corr_pearson = float(both["grade_abs_percent_cop"].corr(both[GOOGLE_COMPARE_COL]))
-    # spearman = 순위 변환 후 pearson (scipy 의존 없이 계산)
-    corr_spearman = float(
-        both["grade_abs_percent_cop"].rank().corr(both[GOOGLE_COMPARE_COL].rank())
-    )
-
-    # --- 산출물: google 열 없이 저장 ---
-    out_cols = [
-        "edge_id", "u", "v", "key", "length_m",
-        "grade_percent_cop", "grade_abs_percent_cop", "geometry_wkt",
-    ]
-    out = valid_edges[out_cols]
+    out = edges.loc[valid, ["edge_id", "u", "v", "key", "length_m", "geometry_wkt"]].copy()
+    out["grade_percent_cop"] = sm.loc[valid, "grade_percent"]
+    out["grade_abs_percent_cop"] = sm.loc[valid, "grade_abs_percent"]
     assert not any("google" in c.lower() for c in out.columns), "google 열이 산출물에 포함됨"
     out_path = out_dir / "edges_base.parquet"
     out.to_parquet(out_path, index=False)
 
+    # ≥100m 구간 불변성: 스무딩이 장거리 실제 지형을 훼손하지 않는지
+    raw_long = raw_diag["by_length_bucket"][-1]["copernicus"]
+    mit_long = mit_diag["by_length_bucket"][-1]["copernicus"]
+    long_bucket_median_shift = (
+        round(abs(mit_long["median"] - raw_long["median"]) / raw_long["median"], 4)
+        if raw_long and raw_long.get("median")
+        else None
+    )
+
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "plan": "docs/prototype_plan.md v2 단계 0",
+        "plan": "docs/prototype_plan.md v2 단계 0 (게이트 결정: 투트랙 분리)",
         "sources": {
             "network": "OpenStreetMap (ODbL 1.0) — © OpenStreetMap contributors",
             "elevation": "Copernicus GLO-30 — © European Union, contains modified Copernicus DEM data",
@@ -137,38 +204,46 @@ def main() -> None:
         },
         "input_rows": input_rows,
         "exclusions": {
-            "missing_node_ref": int((~missing_node_ref).sum()),
-            "nonpositive_length": int((nonpositive_length & missing_node_ref).sum()),
+            "missing_node_ref": int(missing_node_ref.sum()),
+            "nonpositive_length": int((nonpositive_length & ~missing_node_ref).sum()),
             "missing_copernicus_elevation": int(
-                (missing_elev & missing_node_ref & ~nonpositive_length).sum()
+                (missing_elev & ~missing_node_ref & ~nonpositive_length).sum()
             ),
-            "grade_over_100pct": int(
-                (over_error & missing_node_ref & ~nonpositive_length & ~missing_elev).sum()
+            "grade_over_100pct_after_mitigation": int(
+                (over_error & ~missing_node_ref & ~nonpositive_length & ~missing_elev).sum()
             ),
         },
         "valid_rows": int(valid.sum()),
-        "grade_overall": {
-            "copernicus_valid": grade_stats(valid_edges["grade_abs_percent_cop"]),
-            "google_reference": grade_stats(
-                edges.loc[edges[GOOGLE_COMPARE_COL] <= error_grade, GOOGLE_COMPARE_COL]
-            ),
+        "noise_mitigation": {
+            "method": mit["method"],
+            "params": {
+                "neighbor_max_length_m": mit["neighbor_max_length_m"],
+                "self_weight_alpha": mit["self_weight_alpha"],
+                "passes": mit["passes"],
+            },
+            "long_bucket_median_shift_ratio": long_bucket_median_shift,
         },
-        "noise_diagnostics_by_length_bucket": bucket_report,
-        "google_correlation_on_common_valid": {
-            "n": int(len(both)),
-            "pearson": round(corr_pearson, 4),
-            "spearman": round(corr_spearman, 4),
-        },
+        "diagnostics_raw": raw_diag,
+        "diagnostics_mitigated": mit_diag,
         "outputs": {"edges_base_parquet": str(out_path.relative_to(ROOT))},
     }
     report_path = out_dir / "build_report.json"
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
-    # 행수 정합 검사
     total = report["valid_rows"] + sum(report["exclusions"].values())
     assert total == input_rows, f"행수 불일치: {total} != {input_rows}"
-    print(json.dumps({k: report[k] for k in ["input_rows", "exclusions", "valid_rows"]}, ensure_ascii=False))
+    print(json.dumps(
+        {
+            "valid_rows": report["valid_rows"],
+            "over_100pct_raw": raw_diag["over_100pct"],
+            "over_100pct_mitigated": mit_diag["over_100pct"],
+            "median_raw": raw_diag["overall"].get("median"),
+            "median_mitigated": mit_diag["overall"].get("median"),
+            "long_bucket_median_shift_ratio": long_bucket_median_shift,
+        },
+        ensure_ascii=False,
+    ))
     print(f"OK -> {out_path}")
     print(f"OK -> {report_path}")
 

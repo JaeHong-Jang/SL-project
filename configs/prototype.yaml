@@ -14,6 +14,14 @@ noise_diagnostics:
   # 단계 0 노이즈 진단용 엣지 길이 구간 (m)
   length_buckets: [0, 20, 50, 100]
 
+noise_mitigation:
+  # GLO-30 30m 격자 양자화 노이즈 완화: 네트워크 이웃 고도 스무딩.
+  # 게이트 결정(2026-08-12 투트랙 분리)에 따라 웹용 데이터에만 적용한다.
+  method: node_neighbor_idw
+  neighbor_max_length_m: 60   # 이 길이 이하의 인접 엣지만 스무딩에 사용 (짧은 링크 = 양자화 스텝 위치)
+  self_weight_alpha: 0.5      # 새 고도 = alpha×원값 + (1-alpha)×이웃 IDW 평균
+  passes: 2
+
 weather_presets:
   clear: {rain_mm: 0, snow_cm: 0}
   cloudy: {rain_mm: 0, snow_cm: 0}     # 비용은 clear와 동일, UI 아이콘만 다름
