@@ -131,3 +131,7 @@ outputs/figures/SL 최종 시각화.pptx
 # --- OS ---
 .DS_Store
 Thumbs.db
+
+# 프로토타입 프론트엔드 생성물 (docs/prototype_plan.md v2)
+prototype/frontend/node_modules/
+prototype/frontend/dist/

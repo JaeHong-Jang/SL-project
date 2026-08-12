@@ -1,0 +1,6 @@
+/* 단계 5에서 구현. 빌드 파이프라인 검증용 최소 스타일. */
+html, body, #app { height: 100%; margin: 0; }
+#app { display: flex; }
+#panel { width: 320px; padding: 16px; font-family: system-ui, sans-serif; }
+#map { flex: 1; background: #e8ecef; }
+.placeholder { color: #667; }

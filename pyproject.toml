@@ -23,7 +23,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "ruff", "httpx"]
+prototype = ["fastapi", "uvicorn[standard]", "scipy"]
 
 [project.scripts]
 sl-accessibility = "sl_accessibility.cli:app"
