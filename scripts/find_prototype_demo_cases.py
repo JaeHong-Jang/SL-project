@@ -1,9 +1,10 @@
 """단계 6 — 발표용 대표 사례 3개 자동 탐색·검증 (docs/prototype_plan.md v2).
 
 사례:
-1. slope_avoidance  — 맑음에서 M0와 M3 경로가 다르고 우회가 5% 이상
-2. weather_reroute  — 건조 M3와 눈 M3의 경로가 다름
+1. slope_avoidance  — 맑음에서 M0와 M3 경로가 다르고 우회가 최대인 곳
+2. weather_reroute  — 건조 M3와 눈 M3의 경로 격차가 최대인 곳
 3. reclassified_400 — 시흥5동 시드: M0 ≤ 400m < M3 부담 (Copernicus 데이터로 재검증)
+4. senior_facility  — 노인 시설 중 400m 재분류이면서 부담 증가가 최대인 곳
 
 실행:
     python scripts/find_prototype_demo_cases.py           # 탐색 + demo-cases.json 생성
@@ -126,11 +127,42 @@ def find_cases(engine: RouteEngine) -> list[dict]:
         origin, stop_id, "clear", r,
     )
 
-    cases = [c for c in [case1, case2, case3] if c is not None]
-    if len(cases) < 3:
-        missing = {"slope_avoidance": case1, "weather_reroute": case2}
+    case4 = find_senior_case(engine)
+
+    cases = [c for c in [case1, case2, case3, case4] if c is not None]
+    if len(cases) < 4:
+        missing = {"slope_avoidance": case1, "weather_reroute": case2, "senior_facility": case4}
         raise SystemExit(f"사례 탐색 실패: {[k for k, v in missing.items() if v is None]}")
     return cases
+
+
+def find_senior_case(engine: RouteEngine):
+    """노인 시설을 출발지로, 400m 재분류이면서 부담 증가가 최대인 시설을 고른다."""
+    fac = pd.read_csv(ROOT / "data" / "senior_welfare_with_coords.csv", low_memory=False).dropna(
+        subset=["lon", "lat"]
+    )
+    best = None  # (부담 증가, 시설명, payload)
+    for row in fac.itertuples():
+        stop_id = nearest_stop(engine, float(row.lon), float(row.lat))
+        if stop_id is None:
+            continue
+        try:
+            r = engine.route(float(row.lon), float(row.lat), stop_id, "clear")
+        except RouteError:
+            continue
+        if r["comparison"]["threshold_status"] != "reclassified":
+            continue
+        inc = r["m3"]["equivalent_distance_m"] - r["m0"]["network_distance_m"]
+        key = (inc, str(row.기관명칭))  # 동률 시 이름으로 결정적 tie-break
+        if best is None or key > best[0]:
+            best = (key, case_payload(
+                "senior_facility",
+                f"노인시설 400m 재분류 — {row.기관명칭}",
+                f"{row.관할_자치구} {row.기관명칭}({row.시설종류}). 현행 기준으로는 정류장 접근 양호지만 "
+                "경사·날씨 부담을 반영하면 400m를 넘는다.",
+                (float(row.lon), float(row.lat)), stop_id, "clear", r,
+            ))
+    return best[1] if best else None
 
 
 def verify(engine: RouteEngine) -> None:

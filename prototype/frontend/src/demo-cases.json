@@ -51,6 +51,23 @@
         "path_changed": false,
         "threshold_status": "reclassified"
       }
+    },
+    {
+      "id": "senior_facility",
+      "title": "노인시설 400m 재분류 — 성북힐요양원",
+      "description": "성북구 성북힐요양원(노인요양시설). 현행 기준으로는 정류장 접근 양호지만 경사·날씨 부담을 반영하면 400m를 넘는다.",
+      "origin": {
+        "lng": 126.988733,
+        "lat": 37.595397
+      },
+      "stop_id": "bus:107000514.0",
+      "weather": "clear",
+      "expect": {
+        "m0_m": 348.2,
+        "m3_equivalent_m": 484.2,
+        "path_changed": false,
+        "threshold_status": "reclassified"
+      }
     }
   ]
 }
