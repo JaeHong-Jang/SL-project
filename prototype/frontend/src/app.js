@@ -45,25 +45,45 @@ const map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl(), "top-right");
 
 let originMarker = null;
+let destMarker = null;
 
-// 경사 → 색 (0%=초록, 15%=주황, 30%+=빨강 선형 보간)
-function gradeColor(g) {
-  const t = Math.min(Math.abs(g), 30);
-  const lerp = (a, b, u) => Math.round(a + (b - a) * u);
-  const hex = (r, gg, b) => `rgb(${r},${gg},${b})`;
-  const GREEN = [46, 125, 50], ORANGE = [249, 168, 37], RED = [198, 40, 40];
-  if (t <= 15) {
-    const u = t / 15;
-    return hex(lerp(GREEN[0], ORANGE[0], u), lerp(GREEN[1], ORANGE[1], u), lerp(GREEN[2], ORANGE[2], u));
+// 네이버 지도식 핀 마커 (출/도)
+function makePin(label, color) {
+  const el = document.createElement("div");
+  el.className = "pin";
+  el.innerHTML =
+    `<svg width="34" height="44" viewBox="0 0 34 44" aria-hidden="true">` +
+    `<path d="M17 43C17 43 3 24.5 3 15a14 14 0 1 1 28 0c0 9.5-14 28-14 28z" fill="${color}" stroke="#fff" stroke-width="2.5"/>` +
+    `<text x="17" y="20.5" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${label}</text></svg>`;
+  return el;
+}
+
+function setDestPin(coords) {
+  if (destMarker) destMarker.remove();
+  destMarker = null;
+  if (coords) {
+    destMarker = new maplibregl.Marker({ element: makePin("도", "#ef4444"), anchor: "bottom" })
+      .setLngLat(coords).addTo(map);
   }
-  const u = (t - 15) / 15;
-  return hex(lerp(ORANGE[0], RED[0], u), lerp(ORANGE[1], RED[1], u), lerp(ORANGE[2], RED[2], u));
+}
+
+// 경사 → 색: 뚜렷한 단계 구분 (범례와 반드시 동기화 — index.html legend-steps)
+const GRADE_CLASSES = [
+  { max: 5, color: "#2e7d32" },   // 0–5% 초록
+  { max: 10, color: "#fbc02d" },  // 5–10% 노랑
+  { max: 20, color: "#f57c00" },  // 10–20% 주황
+  { max: 30, color: "#d32f2f" },  // 20–30% 빨강
+  { max: Infinity, color: "#7f1d1d" }, // 30%+ 진빨강
+];
+function gradeColor(g) {
+  const t = Math.abs(g);
+  for (const c of GRADE_CLASSES) if (t < c.max) return c.color;
+  return GRADE_CLASSES[GRADE_CLASSES.length - 1].color;
 }
 
 map.on("load", async () => {
   // 소스
   map.addSource("stops", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-  map.addSource("selected-stop", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("m0-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("m3-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("snap-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -77,11 +97,6 @@ map.on("load", async () => {
       "circle-stroke-color": "#fff", "circle-stroke-width": 1,
     },
   });
-  map.addLayer({
-    id: "selected-stop", type: "circle", source: "selected-stop",
-    paint: { "circle-radius": 9, "circle-color": "#c62828", "circle-stroke-color": "#fff", "circle-stroke-width": 2.5 },
-  });
-
   // 스냅 연결선
   map.addLayer({
     id: "snap-lines", type: "line", source: "snap-lines",
@@ -145,7 +160,8 @@ map.on("load", async () => {
 function setOrigin(lnglat) {
   state.origin = { lng: lnglat[0], lat: lnglat[1] };
   if (originMarker) originMarker.remove();
-  originMarker = new maplibregl.Marker({ color: "#1d4ed8" }).setLngLat(lnglat).addTo(map);
+  originMarker = new maplibregl.Marker({ element: makePin("출", "#2563eb"), anchor: "bottom" })
+    .setLngLat(lnglat).addTo(map);
   document.getElementById("origin-label").textContent =
     `출발지 (${lnglat[0].toFixed(5)}, ${lnglat[1].toFixed(5)})`;
   document.getElementById("edit-origin").hidden = false;
@@ -158,12 +174,7 @@ function selectStop(stop, coords) {
   state.stop = stop;
   document.getElementById("dest-label").textContent = `${stop.name} (${stop.stop_id.split(":")[0] === "subway" ? "지하철" : "버스"})`;
   document.getElementById("edit-dest").hidden = false;
-  if (coords) {
-    map.getSource("selected-stop").setData({
-      type: "FeatureCollection",
-      features: [{ type: "Feature", geometry: { type: "Point", coordinates: coords }, properties: {} }],
-    });
-  }
+  if (coords) setDestPin(coords);
   state.phase = state.origin ? "ready" : "waiting_origin";
   hint(state.origin ? "" : "지도를 클릭해 출발지를 정하세요.");
   maybeRoute();
@@ -264,9 +275,9 @@ function render(data) {
   const st = data.comparison.threshold_status;
   verdict.className = `verdict ${st}`;
   verdict.textContent =
-    st === "reclassified" ? "부담 반영 후 400m 초과 — 현행 기준으로는 양호로 분류되는 지점"
-    : st === "within" ? "400m 이내 유지"
-    : "두 기준 모두 400m 초과";
+    st === "reclassified" ? "⚠️ 부담 반영 후 400m 초과 — 현행 기준으로는 양호로 분류되는 지점"
+    : st === "within" ? "✅ 400m 이내 — 부담을 반영해도 접근성 양호"
+    : "🚫 두 기준 모두 400m 초과";
 
   // 날씨로 경로가 바뀌었는지 (직전 결과와 비교)
   const badge = document.getElementById("reroute-badge");
@@ -329,19 +340,19 @@ document.getElementById("edit-origin").addEventListener("click", () => {
 document.getElementById("edit-dest").addEventListener("click", () => {
   state.stop = null;
   state.phase = "waiting_destination";
+  setDestPin(null);
   document.getElementById("dest-label").textContent = "정류장 마커를 클릭해 도착지를 정하세요";
   hint("정류장 마커를 클릭해 도착지를 다시 정하세요. (줌 13부터 표시)");
 });
 
 document.getElementById("swap").addEventListener("click", () => {
   // 도착지(정류장) 위치가 새 출발지가 되고, 도착지는 다시 선택 (O는 자유점, D는 정류장 제약)
-  const sel = map.getSource("selected-stop")._data;
-  if (!sel || !sel.features.length) return;
-  const coords = sel.features[0].geometry.coordinates;
+  if (!destMarker) return;
+  const p = destMarker.getLngLat();
   state.stop = null;
   document.getElementById("dest-label").textContent = "정류장 마커를 클릭해 도착지를 정하세요";
-  map.getSource("selected-stop").setData({ type: "FeatureCollection", features: [] });
-  setOrigin(coords);
+  setDestPin(null);
+  setOrigin([p.lng, p.lat]);
   hint("교환: 이전 도착 정류장이 출발지가 되었습니다. 새 도착 정류장을 클릭하세요.");
 });
 
@@ -350,7 +361,8 @@ document.getElementById("reset").addEventListener("click", () => {
   state.phase = "waiting_origin";
   state.requestToken++;
   if (originMarker) { originMarker.remove(); originMarker = null; }
-  ["m0-route", "m3-route", "snap-lines", "selected-stop"].forEach((s) =>
+  setDestPin(null);
+  ["m0-route", "m3-route", "snap-lines"].forEach((s) =>
     map.getSource(s)?.setData({ type: "FeatureCollection", features: [] }));
   document.getElementById("result").hidden = true;
   document.getElementById("error-box").hidden = true;
@@ -397,12 +409,7 @@ if (!demoCases.length) {
       state.stop = { stop_id: c.stop_id, name };
       document.getElementById("dest-label").textContent = name;
       document.getElementById("edit-dest").hidden = false;
-      if (coords) {
-        map.getSource("selected-stop").setData({
-          type: "FeatureCollection",
-          features: [{ type: "Feature", geometry: { type: "Point", coordinates: coords }, properties: {} }],
-        });
-      }
+      if (coords) setDestPin(coords);
       setOrigin([c.origin.lng, c.origin.lat]);
     });
     demoBox.appendChild(btn);

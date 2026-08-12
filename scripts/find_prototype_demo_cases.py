@@ -74,7 +74,9 @@ def find_cases(engine: RouteEngine) -> list[dict]:
     rng = np.random.default_rng(20260812)
     sample = steep.sample(min(400, len(steep)), random_state=20260812)
 
-    case1 = case2 = None
+    # 첫 발견이 아니라 전체 표본에서 가장 극적인 사례를 고른다.
+    best1 = None  # (detour_percent, payload) — 경사 회피가 가장 명백한 곳
+    best2 = None  # (경로변경 구간 부담 격차, payload) — 눈 재경로가 가장 명백한 곳
     for row in sample.itertuples():
         lng, lat = float(engine.node_lonlat[row.u_idx][0]), float(engine.node_lonlat[row.u_idx][1])
         stop_id = nearest_stop(engine, lng, lat)
@@ -86,27 +88,31 @@ def find_cases(engine: RouteEngine) -> list[dict]:
             continue
         if r_clear["m0"]["network_distance_m"] < 150:
             continue
-        if case1 is None and r_clear["comparison"]["path_changed"] and r_clear["comparison"]["detour_percent"] >= 5:
-            case1 = case_payload(
+        det = r_clear["comparison"]["detour_percent"]
+        if r_clear["comparison"]["path_changed"] and det >= 5 and (best1 is None or det > best1[0]):
+            best1 = (det, case_payload(
                 "slope_avoidance",
                 "경사 회피 — 돌아가더라도 완만한 길",
-                "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 5% 이상 우회한다.",
+                "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 크게 우회한다.",
                 (lng, lat), stop_id, "clear", r_clear,
+            ))
+        try:
+            r_snow = engine.route(lng, lat, stop_id, "snow")
+        except RouteError:
+            continue
+        if r_snow["m3"]["edge_ids"] != r_clear["m3"]["edge_ids"]:
+            gap = abs(
+                r_snow["m3"]["physical_distance_m"] - r_clear["m3"]["physical_distance_m"]
             )
-        if case2 is None:
-            try:
-                r_snow = engine.route(lng, lat, stop_id, "snow")
-            except RouteError:
-                continue
-            if r_snow["m3"]["edge_ids"] != r_clear["m3"]["edge_ids"]:
-                case2 = case_payload(
+            if best2 is None or gap > best2[0]:
+                best2 = (gap, case_payload(
                     "weather_reroute",
                     "악천후 경로 변화 — 눈이 오면 다른 길",
                     "같은 출발지·정류장에서 맑음 M3와 눈 M3의 경로가 달라진다.",
                     (lng, lat), stop_id, "snow", r_snow,
-                )
-        if case1 is not None and case2 is not None:
-            break
+                ))
+    case1 = best1[1] if best1 else None
+    case2 = best2[1] if best2 else None
 
     origin = SEED_RECLASSIFIED["origin"]
     cand = engine.stops[engine.stops["name"].str.contains(SEED_RECLASSIFIED["hint"], na=False)]

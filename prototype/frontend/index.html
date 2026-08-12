@@ -94,8 +94,14 @@
       <main id="map" aria-label="지도"></main>
       <div id="legend" aria-label="경로 경사 범례">
         <div class="legend-title">경로 경사</div>
-        <div class="legend-bar"></div>
-        <div class="legend-labels"><span>0%</span><span>15%</span><span>30%+</span></div>
+        <!-- 색상은 src/app.js의 GRADE_CLASSES와 동기화 -->
+        <div class="legend-steps">
+          <div class="step"><span class="sw" style="background:#2e7d32"></span>0–5% 평탄</div>
+          <div class="step"><span class="sw" style="background:#fbc02d"></span>5–10% 완만</div>
+          <div class="step"><span class="sw" style="background:#f57c00"></span>10–20% 가파름</div>
+          <div class="step"><span class="sw" style="background:#d32f2f"></span>20–30% 급경사</div>
+          <div class="step"><span class="sw" style="background:#7f1d1d"></span>30%+ (비용 상한)</div>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/app.js"></script>

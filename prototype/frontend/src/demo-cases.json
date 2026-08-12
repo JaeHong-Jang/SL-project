@@ -4,7 +4,7 @@
     {
       "id": "slope_avoidance",
       "title": "경사 회피 — 돌아가더라도 완만한 길",
-      "description": "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 5% 이상 우회한다.",
+      "description": "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 크게 우회한다.",
       "origin": {
         "lng": 126.928651,
         "lat": 37.631667
@@ -23,16 +23,16 @@
       "title": "악천후 경로 변화 — 눈이 오면 다른 길",
       "description": "같은 출발지·정류장에서 맑음 M3와 눈 M3의 경로가 달라진다.",
       "origin": {
-        "lng": 126.953233,
-        "lat": 37.552948
+        "lng": 126.940403,
+        "lat": 37.559843
       },
-      "stop_id": "bus:113900149.0",
+      "stop_id": "bus:112000034.0",
       "weather": "snow",
       "expect": {
-        "m0_m": 484.7,
-        "m3_equivalent_m": 709.4,
+        "m0_m": 245.0,
+        "m3_equivalent_m": 323.9,
         "path_changed": true,
-        "threshold_status": "both_over"
+        "threshold_status": "within"
       }
     },
     {
