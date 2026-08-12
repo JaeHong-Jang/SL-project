@@ -90,7 +90,7 @@ button:disabled { opacity: 0.45; cursor: default; }
 /* 결과 카드: 요약문 + 막대 비교 + 접기 상세 */
 .summary { font-size: 13.5px; line-height: 1.6; margin: 2px 0 12px; color: #1f2430; }
 .meters { display: flex; flex-direction: column; gap: 7px; margin: 0 0 12px; }
-.meter-row { display: grid; grid-template-columns: 88px 1fr 78px; align-items: center; gap: 8px; font-size: 12.5px; }
+.meter-row { display: grid; grid-template-columns: 96px 1fr 74px; align-items: center; gap: 8px; font-size: 12.5px; }
 .meter-row .ml { color: #4b5563; }
 .meter-row b { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
 .bar { display: block; height: 11px; background: #eef2f6; border-radius: 6px; overflow: hidden; }

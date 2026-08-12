@@ -498,25 +498,32 @@ function render(data) {
     : st === "within" ? "✅ 400m 이내 — 부담을 반영해도 접근성 양호"
     : "🚫 두 기준 모두 400m 초과";
 
-  // 날씨로 경로가 바뀌었는지 (직전 결과와 비교)
+  // 날씨로 경로가 바뀌었는지 — 같은 출발·도착에서 날씨만 바뀐 경우에만 비교
   const badge = document.getElementById("reroute-badge");
-  if (prev && JSON.stringify(prev.m3.edge_ids) !== JSON.stringify(data.m3.edge_ids)) {
+  const odKey = `${state.origin.lng},${state.origin.lat}|${state.stop ? state.stop.stop_id : ""}`;
+  const sameOD = state.resultKey === odKey;
+  if (sameOD && prev && JSON.stringify(prev.m3.edge_ids) !== JSON.stringify(data.m3.edge_ids)) {
     const diff = (data.m3.equivalent_distance_m - prev.m3.equivalent_distance_m).toFixed(1);
-    badge.textContent = `날씨(${WEATHER_LABEL[state.weather]})로 부담 최소경로가 바뀌었습니다 (부담 ${diff > 0 ? "+" : ""}${diff}m)`;
+    badge.textContent = `날씨(${WEATHER_LABEL[state.weather]})로 추천 길이 바뀌었습니다 (부담 ${diff > 0 ? "+" : ""}${diff}m)`;
     badge.hidden = false;
   } else {
     badge.hidden = true;
   }
+  state.resultKey = odKey;
 
   // 한 줄 요약 (평문) + 막대 비교
   const m0v = data.m0.network_distance_m;
   const phys = data.m3.physical_distance_m;
   const eq = data.m3.equivalent_distance_m;
-  let summary = `지도에서는 ${fmtM(m0v)} 거리지만, 경사와 날씨까지 감안하면 ` +
-    `${fmtM(eq)}를 걷는 것과 비슷한 부담입니다.`;
-  summary += data.comparison.path_changed
-    ? ` 가파른 구간(최대 ${data.m0.max_grade_abs_percent}%)을 피해 ${data.comparison.detour_m}m 돌아가는 완만한 길을 추천합니다.`
-    : ` 우회할 완만한 길이 없어 같은 경로를 걷게 됩니다.`;
+  let summary;
+  if (data.comparison.path_changed) {
+    summary = `가장 짧은 길(점선)은 ${fmtM(m0v)}지만 가파른 구간(최대 ${data.m0.max_grade_abs_percent}%)을 지납니다. ` +
+      `${data.comparison.detour_m}m 돌아가는 완만한 길(실선, ${fmtM(phys)})을 추천하며, ` +
+      `경사와 날씨까지 감안하면 이 길은 ${fmtM(eq)}를 걷는 것과 비슷한 부담입니다.`;
+  } else {
+    summary = `정류장까지 가는 길은 ${fmtM(m0v)} 경로 하나뿐입니다. ` +
+      `경사와 날씨까지 감안하면 ${fmtM(eq)}를 걷는 것과 비슷한 부담입니다.`;
+  }
   document.getElementById("summary").textContent = summary;
 
   const mx = Math.max(m0v, phys, eq);
