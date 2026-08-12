@@ -90,13 +90,25 @@ def find_cases(engine: RouteEngine) -> list[dict]:
         if r_clear["m0"]["network_distance_m"] < 150:
             continue
         det = r_clear["comparison"]["detour_percent"]
-        if r_clear["comparison"]["path_changed"] and det >= 5 and (best1 is None or det > best1[0]):
-            best1 = (det, case_payload(
-                "slope_avoidance",
-                "경사 회피 — 돌아가더라도 완만한 길",
-                "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 크게 우회한다.",
-                (lng, lat), stop_id, "clear", r_clear,
-            ))
+        m0_max = r_clear["m0"]["max_grade_abs_percent"]
+        m3_max = r_clear["m3"]["max_grade_abs_percent"]
+        # "왜 M3가 나은가"가 눈에 보이려면: M0는 가파르고(≥15%) M3는 완만해야 한다.
+        # 점수 = 경사 대비(주) + 우회율(보조). 거리도 어느 정도 길어야 지도에서 잘 보인다.
+        if (
+            r_clear["comparison"]["path_changed"]
+            and det >= 3
+            and r_clear["m0"]["network_distance_m"] >= 250
+            and m0_max >= 15
+        ):
+            score = (m0_max - m3_max) + det * 0.5
+            if best1 is None or score > best1[0]:
+                best1 = (score, case_payload(
+                    "slope_avoidance",
+                    "경사 회피 — 돌아가더라도 완만한 길",
+                    f"맑음 기준. 거리 최단경로(M0)는 최대 경사 {m0_max:.0f}% 구간(빨강 점선)을 지나지만, "
+                    f"부담 최소경로(M3)는 최대 {m3_max:.0f}%의 완만한 길(초록 실선)로 우회한다.",
+                    (lng, lat), stop_id, "clear", r_clear,
+                ))
         try:
             r_snow = engine.route(lng, lat, stop_id, "snow")
         except RouteError:

@@ -103,7 +103,7 @@ map.on("load", async () => {
     paint: { "line-color": "#9aa2ad", "line-width": 1.5, "line-dasharray": [1, 1.5] },
   });
 
-  // M0: 흰 casing + 회색 점선
+  // M0: 흰 casing + 세그먼트별 경사색 "점선" (점선 = 거리 기준 경로, 실선 = 부담 최소경로)
   map.addLayer({
     id: "m0-casing", type: "line", source: "m0-route",
     layout: { "line-cap": "round", "line-join": "round" },
@@ -112,7 +112,7 @@ map.on("load", async () => {
   map.addLayer({
     id: "m0-line", type: "line", source: "m0-route",
     layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": "#5f6b7a", "line-width": 3.5, "line-dasharray": [1.6, 1.6] },
+    paint: { "line-color": ["get", "color"], "line-width": 3.5, "line-dasharray": [1.4, 1.6] },
   });
 
   // M3: 흰 casing + 세그먼트별 경사색 실선
@@ -232,10 +232,14 @@ function render(data) {
   state.result = data;
   state.phase = "displayed";
 
-  // 경로 지오메트리
+  // 경로 지오메트리 (M0도 세그먼트별 경사색 — 점선으로 구분)
   map.getSource("m0-route").setData({
     type: "FeatureCollection",
-    features: [{ type: "Feature", geometry: { type: "LineString", coordinates: data.m0.geometry }, properties: {} }],
+    features: data.m0.segments.map((s) => ({
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: s.geometry },
+      properties: { color: gradeColor(s.grade_abs_percent), grade: s.grade_abs_percent },
+    })),
   });
   map.getSource("m3-route").setData({
     type: "FeatureCollection",
@@ -295,6 +299,8 @@ function render(data) {
   document.getElementById("cmp-detour").textContent = data.comparison.path_changed
     ? `+${data.comparison.detour_m}m (+${data.comparison.detour_percent}%)`
     : "동일 경로, 비용만 증가";
+  document.getElementById("cmp-grades").textContent =
+    `M0 ${data.m0.max_grade_abs_percent}% · M3 ${data.m3.max_grade_abs_percent}%`;
 
   const bd = data.breakdown;
   document.getElementById("bd-physical").textContent = fmtM(bd.physical_m);

@@ -93,6 +93,10 @@ def test_m0_and_m3_routes(engine):
     assert r["m3"]["equivalent_distance_m"] == pytest.approx(282.2)
     assert r["comparison"]["path_changed"] is True
     assert r["comparison"]["threshold_status"] == "within"
+    # M0에도 경사색 세그먼트가 있어야 한다 (경사 45% 원값 유지 — cap은 비용에만)
+    assert len(r["m0"]["segments"]) == 3
+    assert r["m0"]["max_grade_abs_percent"] == pytest.approx(45.0)
+    assert r["m3"]["max_grade_abs_percent"] == pytest.approx(45.0)
 
 
 def test_breakdown_sums_and_ordering(engine):

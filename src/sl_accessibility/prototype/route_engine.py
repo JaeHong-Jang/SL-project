@@ -157,6 +157,23 @@ class RouteEngine:
         lon, lat = self.to_4326.transform(coords[:, 0], coords[:, 1])
         return [[round(float(a), 6), round(float(b), 6)] for a, b in zip(lon, lat)]
 
+    def _build_segments(self, edge_ids: list[int], path: list[int]) -> list[dict]:
+        """경로 엣지별 경사·지오메트리 세그먼트 (M0/M3 공용 — 경사색 표시용)."""
+        segments = []
+        for eid, a in zip(edge_ids, path[:-1]):
+            row = self.edges.loc[eid]
+            gval = float(row["grade_abs_percent_cop"])
+            segments.append(
+                {
+                    "edge_id": int(eid),
+                    "grade_abs_percent": round(gval, 2),
+                    "grade_display_bucket": grade_bucket(gval),
+                    "length_m": round(float(row["length_m"]), 1),
+                    "geometry": self._edge_geometry_4326(eid, a),
+                }
+            )
+        return segments
+
     # ---------- 부담 분해 (M3 경로 고정) ----------
 
     def _decompose(self, edge_ids: list[int], weather: str) -> dict:
@@ -200,24 +217,12 @@ class RouteEngine:
 
         m3_rows = self.edges.loc[m3_edges]
         m3_physical = float(m3_rows["length_m"].sum())
-        segments = []
-        for eid, (a, b) in zip(m3_edges, zip(m3_path[:-1], m3_path[1:])):
-            row = self.edges.loc[eid]
-            gval = float(row["grade_abs_percent_cop"])
-            segments.append(
-                {
-                    "edge_id": int(eid),
-                    "grade_abs_percent": round(gval, 2),
-                    "grade_display_bucket": grade_bucket(gval),
-                    "length_m": round(float(row["length_m"]), 1),
-                    "geometry": self._edge_geometry_4326(eid, a),
-                }
-            )
+        segments = self._build_segments(m3_edges, m3_path)
+        m0_segments = self._build_segments(m0_edges, m0_path)
 
         m0_coords: list[list[float]] = []
-        for eid, (a, b) in zip(m0_edges, zip(m0_path[:-1], m0_path[1:])):
-            seg = self._edge_geometry_4326(eid, a)
-            m0_coords.extend(seg if not m0_coords else seg[1:])
+        for seg in m0_segments:
+            m0_coords.extend(seg["geometry"] if not m0_coords else seg["geometry"][1:])
 
         path_changed = m0_edges != m3_edges
         threshold = 400.0
@@ -243,12 +248,15 @@ class RouteEngine:
                 "network_distance_m": round(m0_cost, 1),
                 "edge_ids": m0_edges,
                 "geometry": m0_coords,
+                "segments": m0_segments,
+                "max_grade_abs_percent": round(max(s["grade_abs_percent"] for s in m0_segments), 1),
             },
             "m3": {
                 "physical_distance_m": round(m3_physical, 1),
                 "equivalent_distance_m": _rounded_breakdown(breakdown)["total_m"],
                 "edge_ids": m3_edges,
                 "segments": segments,
+                "max_grade_abs_percent": round(max(s["grade_abs_percent"] for s in segments), 1),
             },
             "breakdown": _rounded_breakdown(breakdown),
             "comparison": {

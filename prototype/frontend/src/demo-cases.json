@@ -4,18 +4,18 @@
     {
       "id": "slope_avoidance",
       "title": "경사 회피 — 돌아가더라도 완만한 길",
-      "description": "맑음 기준. 거리 최단경로(M0)와 부담 최소경로(M3)가 갈라지고, M3가 크게 우회한다.",
+      "description": "맑음 기준. 거리 최단경로(M0)는 최대 경사 38% 구간(빨강 점선)을 지나지만, 부담 최소경로(M3)는 최대 13%의 완만한 길(초록 실선)로 우회한다.",
       "origin": {
-        "lng": 126.928651,
-        "lat": 37.631667
+        "lng": 126.968915,
+        "lat": 37.49944
       },
-      "stop_id": "bus:111000355.0",
+      "stop_id": "bus:119900295.0",
       "weather": "clear",
       "expect": {
-        "m0_m": 226.8,
-        "m3_equivalent_m": 254.5,
+        "m0_m": 2631.9,
+        "m3_equivalent_m": 3096.8,
         "path_changed": true,
-        "threshold_status": "within"
+        "threshold_status": "both_over"
       }
     },
     {
