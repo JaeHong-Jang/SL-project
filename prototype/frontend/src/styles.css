@@ -10,7 +10,14 @@
 
 * { box-sizing: border-box; }
 html, body, #app { height: 100%; margin: 0; }
-body { font-family: "Pretendard", "Malgun Gothic", system-ui, sans-serif; font-size: 14px; color: #1f2430; }
+body {
+  font-family: "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", system-ui, sans-serif;
+  font-size: 14px; color: #1f2430;
+  word-break: keep-all;            /* 한글이 단어 중간에서 끊기지 않게 */
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
 #app { display: flex; position: relative; }
 
 /* ---- 왼쪽 패널 ---- */
@@ -69,10 +76,16 @@ button:disabled { opacity: 0.45; cursor: default; }
   display: block; padding: 7px 10px; border-radius: 8px; font-size: 12.5px; line-height: 1.4;
   background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; margin: 0 0 12px;
 }
-.cmp { width: 100%; border-collapse: collapse; }
-.cmp th { text-align: left; font-weight: 500; color: #4b5563; padding: 3px 0; width: 60%; }
-.cmp td { text-align: right; font-variant-numeric: tabular-nums; }
-.cmp tr.total th, .cmp tr.total td { border-top: 1px solid #e2e8f0; font-weight: 700; padding-top: 5px; }
+.cmp { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.cmp th {
+  text-align: left; font-weight: 500; color: #4b5563;
+  padding: 4px 8px 4px 0; width: 46%; vertical-align: top; line-height: 1.45;
+}
+.cmp td {
+  text-align: right; font-variant-numeric: tabular-nums;
+  padding: 4px 0; vertical-align: top; line-height: 1.45;
+}
+.cmp tr.total th, .cmp tr.total td { border-top: 1px solid #e2e8f0; font-weight: 700; padding-top: 6px; }
 
 /* 결과 카드: 요약문 + 막대 비교 + 접기 상세 */
 .summary { font-size: 13.5px; line-height: 1.6; margin: 2px 0 12px; color: #1f2430; }

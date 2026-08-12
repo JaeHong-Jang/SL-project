@@ -301,7 +301,7 @@ function render(data) {
   if (destMarker) {
     const d = destMarker.getLngLat();
     const s = straightM(o, [d.lng, d.lat]);
-    straightText = `${s.toFixed(0)}m ${s <= 400 ? "(400m 이내 — 법정 기준 양호)" : "(400m 초과)"}`;
+    straightText = `${s.toFixed(0)}m (${s <= 400 ? "400m 이내" : "400m 초과"})`;
     map.getSource("legal").setData({
       type: "FeatureCollection",
       features: [
