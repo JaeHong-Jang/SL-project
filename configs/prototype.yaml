@@ -1,0 +1,24 @@
+# M3 보행부담 경로 프로토타입 설정 (docs/prototype_plan.md v2)
+
+paths:
+  edges_csv: data/walking_network_edges_with_slope_google.csv   # OSM 기원 열만 읽음
+  nodes_csv: data/walking_network_nodes_with_elevation.csv      # elevation_copernicus_m만 사용
+  output_dir: data/processed/prototype
+
+slope:
+  # configs/model_params.yaml과 동일한 시나리오 값
+  error_exclude_grade_abs_percent: 100
+  cost_cap_grade_abs_percent: 30
+
+noise_diagnostics:
+  # 단계 0 노이즈 진단용 엣지 길이 구간 (m)
+  length_buckets: [0, 20, 50, 100]
+
+weather_presets:
+  clear: {rain_mm: 0, snow_cm: 0}
+  cloudy: {rain_mm: 0, snow_cm: 0}     # 비용은 clear와 동일, UI 아이콘만 다름
+  rain: {rain_mm: 2, snow_cm: 0}       # 기존 M3 기준선(rain_mm=2)과 정렬
+  snow: {rain_mm: 0, snow_cm: 1}       # 신규 시나리오 값 (기상강도 5)
+
+snap:
+  max_distance_m: 100
