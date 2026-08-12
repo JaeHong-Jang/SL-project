@@ -46,6 +46,12 @@ map.addControl(new maplibregl.NavigationControl(), "top-right");
 
 let originMarker = null;
 let destMarker = null;
+let stopsData = null; // /api/stops GeoJSON 원본 (내부 API 의존 없이 좌표 조회용)
+
+function findStopFeature(stopId) {
+  if (!stopsData) return null;
+  return stopsData.features.find((f) => f.properties.stop_id === stopId) || null;
+}
 
 // 네이버 지도식 핀 마커 (출/도)
 function makePin(label, color) {
@@ -115,11 +121,11 @@ map.on("load", async () => {
   map.addLayer({
     id: "legal-fill", type: "fill", source: "legal",
     filter: ["==", ["geometry-type"], "Polygon"],
-    paint: { "fill-color": "#2563eb", "fill-opacity": 0.05 },
+    paint: { "fill-color": "#2563eb", "fill-opacity": 0.08 },
   });
   map.addLayer({
     id: "legal-line", type: "line", source: "legal",
-    paint: { "line-color": "#2563eb", "line-width": 1.6, "line-dasharray": [2, 2], "line-opacity": 0.65 },
+    paint: { "line-color": "#2563eb", "line-width": 2, "line-dasharray": [2, 2], "line-opacity": 0.85 },
   });
 
   // 정류장 (줌 13부터)
@@ -164,7 +170,8 @@ map.on("load", async () => {
   // 정류장 로드
   try {
     const res = await fetch("/api/stops");
-    map.getSource("stops").setData(await res.json());
+    stopsData = await res.json();
+    map.getSource("stops").setData(stopsData);
   } catch {
     showError("정류장 목록을 불러오지 못했습니다. API 서버(포트 8000)가 실행 중인지 확인하세요.");
   }
@@ -285,6 +292,11 @@ function render(data) {
   });
   // 법정 기준: 정류장 400m 원 + 직선, 카드의 직선거리 행
   const o = [state.origin.lng, state.origin.lat];
+  // 도착 핀이 아직 없으면 (사례 버튼 등) 정류장 좌표를 찾아 생성
+  if (!destMarker && state.stop) {
+    const f = findStopFeature(state.stop.stop_id);
+    if (f) setDestPin(f.geometry.coordinates);
+  }
   let straightText = "—";
   if (destMarker) {
     const d = destMarker.getLngLat();
@@ -461,13 +473,10 @@ if (!demoCases.length) {
       document.querySelectorAll(".weather-btn").forEach((b) =>
         b.classList.toggle("active", b.dataset.weather === c.weather));
       document.getElementById("weather-note").hidden = c.weather !== "cloudy";
-      // 정류장 좌표는 stops 소스에서 찾는다
-      const src = map.getSource("stops");
-      let coords = null, name = c.stop_id;
-      if (src && src._data && src._data.features) {
-        const f = src._data.features.find((x) => x.properties.stop_id === c.stop_id);
-        if (f) { coords = f.geometry.coordinates; name = f.properties.name; }
-      }
+      // 정류장 좌표는 보관해둔 stops GeoJSON에서 찾는다
+      const f = findStopFeature(c.stop_id);
+      const coords = f ? f.geometry.coordinates : null;
+      const name = f ? f.properties.name : c.stop_id;
       state.stop = { stop_id: c.stop_id, name };
       document.getElementById("dest-label").textContent = name;
       document.getElementById("edit-dest").hidden = false;
