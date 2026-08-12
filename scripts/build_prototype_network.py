@@ -247,6 +247,25 @@ def main() -> None:
     print(f"OK -> {out_path}")
     print(f"OK -> {report_path}")
 
+    # --- 단계 2: 라우팅·지도 산출물 (CSR 4종 + 정류장 스냅) ---
+    import sys
+
+    sys.path.insert(0, str(ROOT / "src"))
+    from sl_accessibility.prototype import artifacts as proto_artifacts
+
+    art = proto_artifacts.build_all(cfg, ROOT, out)
+    print(json.dumps(
+        {
+            "cost_check_max_err": art["cost_verification"]["max_relative_error"],
+            "nodes": art["nodes"],
+            "arcs": {k: v["arcs"] for k, v in art["graphs"].items()},
+            "stops_snapped": art["stops_snapped"],
+            "stops_excluded": art["stops_excluded_over_snap_limit"],
+        },
+        ensure_ascii=False,
+    ))
+    print(f"OK -> {out_dir / 'artifacts_report.json'}")
+
 
 if __name__ == "__main__":
     main()

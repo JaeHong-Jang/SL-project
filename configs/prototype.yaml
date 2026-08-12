@@ -3,6 +3,8 @@
 paths:
   edges_csv: data/walking_network_edges_with_slope_google.csv   # OSM 기원 열만 읽음
   nodes_csv: data/walking_network_nodes_with_elevation.csv      # elevation_copernicus_m만 사용
+  bus_stops_csv: data/bus_stop_ridership_2025_with_geom.csv
+  subway_stops_csv: data/subway_station_ridership_2025_with_geom.csv
   output_dir: data/processed/prototype
 
 slope:
