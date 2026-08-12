@@ -356,14 +356,30 @@ function render(data) {
     badge.hidden = true;
   }
 
-  document.getElementById("cmp-m0").textContent = fmtM(data.m0.network_distance_m);
-  document.getElementById("cmp-m3-phys").textContent = fmtM(data.m3.physical_distance_m);
-  document.getElementById("cmp-m3-eq").textContent = fmtM(data.m3.equivalent_distance_m);
+  // 한 줄 요약 (평문) + 막대 비교
+  const m0v = data.m0.network_distance_m;
+  const phys = data.m3.physical_distance_m;
+  const eq = data.m3.equivalent_distance_m;
+  let summary = `지도에서는 ${fmtM(m0v)} 거리지만, 경사와 날씨까지 감안하면 ` +
+    `${fmtM(eq)}를 걷는 것과 비슷한 부담입니다.`;
+  summary += data.comparison.path_changed
+    ? ` 가파른 구간(최대 ${data.m0.max_grade_abs_percent}%)을 피해 ${data.comparison.detour_m}m 돌아가는 완만한 길을 추천합니다.`
+    : ` 우회할 완만한 길이 없어 같은 경로를 걷게 됩니다.`;
+  document.getElementById("summary").textContent = summary;
+
+  const mx = Math.max(m0v, phys, eq);
+  const setBar = (id, v) => (document.getElementById(id).style.width = `${(v / mx) * 100}%`);
+  setBar("bar-m0", m0v); setBar("bar-phys", phys); setBar("bar-eq", eq);
+  document.getElementById("bar-eq").className = st;
+  document.getElementById("val-m0").textContent = fmtM(m0v);
+  document.getElementById("val-phys").textContent = fmtM(phys);
+  document.getElementById("val-eq").textContent = fmtM(eq);
+
   document.getElementById("cmp-detour").textContent = data.comparison.path_changed
     ? `+${data.comparison.detour_m}m (+${data.comparison.detour_percent}%)`
-    : "동일 경로, 비용만 증가";
+    : "동일 경로, 부담만 증가";
   document.getElementById("cmp-grades").textContent =
-    `최단경로 ${data.m0.max_grade_abs_percent}% · 부담경로 ${data.m3.max_grade_abs_percent}%`;
+    `짧은 길 ${data.m0.max_grade_abs_percent}% · 추천 길 ${data.m3.max_grade_abs_percent}%`;
 
   const bd = data.breakdown;
   document.getElementById("bd-physical").textContent = fmtM(bd.physical_m);

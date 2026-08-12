@@ -54,30 +54,37 @@
         <section id="result" aria-label="결과" hidden>
           <div id="verdict" class="verdict"></div>
           <div id="reroute-badge" class="badge" hidden></div>
-          <h2>두 경로 비교</h2>
-          <table class="cmp">
-            <tbody>
-              <tr><th>직선거리 (법정 기준 방식)</th><td id="cmp-straight"></td></tr>
-              <tr><th>거리 최단경로</th><td id="cmp-m0"></td></tr>
-              <tr><th>부담 최소경로 실제 보행거리</th><td id="cmp-m3-phys"></td></tr>
-              <tr><th>부담 최소경로 거리등가 부담</th><td id="cmp-m3-eq"></td></tr>
-              <tr><th>우회</th><td id="cmp-detour"></td></tr>
-              <tr><th>가장 가파른 구간</th><td id="cmp-grades"></td></tr>
-            </tbody>
-          </table>
-          <h2>선택된 부담 최소경로의 부담 구성</h2>
-          <table class="cmp">
-            <tbody>
-              <tr><th>실제거리</th><td id="bd-physical"></td></tr>
-              <tr><th>경사 부담</th><td id="bd-slope"></td></tr>
-              <tr><th>날씨 부담</th><td id="bd-weather"></td></tr>
-              <tr><th>경사×날씨 상호작용</th><td id="bd-interaction"></td></tr>
-              <tr class="total"><th>합계</th><td id="bd-total"></td></tr>
-            </tbody>
-          </table>
-          <p class="hint" id="snap-info"></p>
-          <p class="hint">스냅 연결거리는 연구모형의 400m 판정에서 제외됩니다.</p>
-          <p class="hint" id="model-info"></p>
+          <p id="summary" class="summary"></p>
+          <div class="meters" aria-label="거리 비교">
+            <div class="meter-row"><span class="ml">지도상 거리</span><span class="bar"><i id="bar-m0"></i></span><b id="val-m0"></b></div>
+            <div class="meter-row"><span class="ml">실제 걷는 거리</span><span class="bar"><i id="bar-phys"></i></span><b id="val-phys"></b></div>
+            <div class="meter-row"><span class="ml">체감 거리</span><span class="bar"><i id="bar-eq"></i></span><b id="val-eq"></b></div>
+          </div>
+          <details class="more">
+            <summary>체감 거리가 늘어난 이유</summary>
+            <table class="cmp">
+              <tbody>
+                <tr><th>실제 걷는 거리</th><td id="bd-physical"></td></tr>
+                <tr><th>오르막 부담</th><td id="bd-slope"></td></tr>
+                <tr><th>날씨 부담</th><td id="bd-weather"></td></tr>
+                <tr><th>오르막×날씨 겹침</th><td id="bd-interaction"></td></tr>
+                <tr class="total"><th>체감 거리 합계</th><td id="bd-total"></td></tr>
+              </tbody>
+            </table>
+          </details>
+          <details class="more">
+            <summary>자세한 수치</summary>
+            <table class="cmp">
+              <tbody>
+                <tr><th>직선 거리 (법정 기준 방식)</th><td id="cmp-straight"></td></tr>
+                <tr><th>우회</th><td id="cmp-detour"></td></tr>
+                <tr><th>가장 가파른 구간</th><td id="cmp-grades"></td></tr>
+              </tbody>
+            </table>
+            <p class="hint" id="snap-info"></p>
+            <p class="hint">클릭 지점과 보행망 사이 연결거리는 400m 판정에서 제외됩니다.</p>
+            <p class="hint" id="model-info"></p>
+          </details>
         </section>
 
         <section id="error-box" class="error" role="alert" hidden></section>
