@@ -3,16 +3,100 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>보행부담 경로 프로토타입 — 거리 최단경로(M0) vs 부담 최소경로(M3)</title>
+    <title>보행부담 경로 프로토타입 — 거리 최단경로 vs 부담 최소경로</title>
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <div id="app">
       <aside id="panel">
-        <h1>보행부담 경로 프로토타입</h1>
-        <p class="placeholder">단계 5에서 구현됩니다 (docs/prototype_plan.md v2 §4).</p>
+        <header>
+          <h1>보행부담 경로 프로토타입</h1>
+          <p class="subtitle">거리 최단경로 (M0) vs 경사·날씨 부담 최소경로 (M3)</p>
+        </header>
+
+        <section id="od-section" aria-label="출발지와 도착지">
+          <div class="od-row">
+            <span class="od-dot origin-dot" aria-hidden="true"></span>
+            <span id="origin-label" class="od-label">지도를 클릭해 출발지를 정하세요</span>
+            <button id="edit-origin" type="button" hidden>변경</button>
+          </div>
+          <div class="od-row">
+            <span class="od-dot dest-dot" aria-hidden="true"></span>
+            <span id="dest-label" class="od-label">정류장 마커를 클릭해 도착지를 정하세요</span>
+            <button id="edit-dest" type="button" hidden>변경</button>
+          </div>
+          <div class="btn-row">
+            <button id="swap" type="button" disabled>출발·도착 교환</button>
+            <button id="reset" type="button">초기화</button>
+          </div>
+          <p id="hint" class="hint" role="status"></p>
+        </section>
+
+        <section aria-label="날씨 선택">
+          <h2>날씨</h2>
+          <div class="weather-row" role="group" aria-label="날씨 프리셋">
+            <button class="weather-btn active" data-weather="clear" type="button">☀️ 맑음</button>
+            <button class="weather-btn" data-weather="cloudy" type="button">☁️ 흐림</button>
+            <button class="weather-btn" data-weather="rain" type="button">🌧️ 비</button>
+            <button class="weather-btn" data-weather="snow" type="button">❄️ 눈</button>
+          </div>
+          <p id="weather-note" class="hint" hidden>강수·적설이 없어 맑음과 부담 동일</p>
+        </section>
+
+        <section aria-label="레이어 표시">
+          <h2>레이어</h2>
+          <label><input type="checkbox" id="toggle-m0" checked /> 거리 최단경로 (M0)</label>
+          <label><input type="checkbox" id="toggle-m3" checked /> 부담 최소경로 (M3)</label>
+          <label><input type="checkbox" id="toggle-stops" checked /> 정류장</label>
+        </section>
+
+        <section id="result" aria-label="결과" hidden>
+          <div id="verdict" class="verdict"></div>
+          <div id="reroute-badge" class="badge" hidden></div>
+          <h2>두 경로 비교</h2>
+          <table class="cmp">
+            <tbody>
+              <tr><th>거리 최단경로 (M0)</th><td id="cmp-m0"></td></tr>
+              <tr><th>부담 최소경로 실제 보행거리</th><td id="cmp-m3-phys"></td></tr>
+              <tr><th>부담 최소경로 거리등가 부담</th><td id="cmp-m3-eq"></td></tr>
+              <tr><th>우회</th><td id="cmp-detour"></td></tr>
+            </tbody>
+          </table>
+          <h2>선택된 부담 최소경로의 부담 구성</h2>
+          <table class="cmp">
+            <tbody>
+              <tr><th>실제거리</th><td id="bd-physical"></td></tr>
+              <tr><th>경사 부담</th><td id="bd-slope"></td></tr>
+              <tr><th>날씨 부담</th><td id="bd-weather"></td></tr>
+              <tr><th>경사×날씨 상호작용</th><td id="bd-interaction"></td></tr>
+              <tr class="total"><th>합계</th><td id="bd-total"></td></tr>
+            </tbody>
+          </table>
+          <p class="hint" id="snap-info"></p>
+          <p class="hint">스냅 연결거리는 연구모형의 400m 판정에서 제외됩니다.</p>
+          <p class="hint" id="model-info"></p>
+        </section>
+
+        <section id="error-box" class="error" role="alert" hidden></section>
+        <div id="spinner" class="spinner" hidden aria-label="계산 중">계산 중…</div>
+
+        <section aria-label="발표용 대표 사례">
+          <h2>대표 사례</h2>
+          <div id="demo-buttons" class="demo-col"></div>
+        </section>
+
+        <footer>
+          <p class="hint">계수 α=0.03, β=0.03, 상호작용β=0.08, snow_weight=5 — 시나리오 파라미터, 실측 보정값 아님</p>
+          <p class="hint">웹 지도는 Copernicus 고도 기반 재계산으로 발표 수치와 차이가 있을 수 있음</p>
+          <p class="hint">© OpenStreetMap contributors · © European Union, contains modified Copernicus DEM data</p>
+        </footer>
       </aside>
-      <main id="map"></main>
+      <main id="map" aria-label="지도"></main>
+      <div id="legend" aria-label="경로 경사 범례">
+        <div class="legend-title">경로 경사</div>
+        <div class="legend-bar"></div>
+        <div class="legend-labels"><span>0%</span><span>15%</span><span>30%+</span></div>
+      </div>
     </div>
     <script type="module" src="/src/app.js"></script>
   </body>

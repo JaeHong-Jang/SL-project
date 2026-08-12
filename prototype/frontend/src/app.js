@@ -1,3 +1,410 @@
-// 단계 5에서 구현: 상태 머신, 정류장 레이어, M0/M3 경로 표시, 결과 카드.
-// 빌드 파이프라인 검증용 최소 진입점 (docs/prototype_plan.md v2 단계 1).
-console.log("sl-prototype-frontend skeleton — 단계 5에서 구현 예정");
+// 보행부담 경로 프로토타입 — docs/prototype_plan.md v2 §4·§7
+// 상태 머신: waiting_origin → waiting_destination → ready → loading → displayed / error
+
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import demoDoc from "./demo-cases.json";
+
+const SEOUL_CENTER = [126.978, 37.5665];
+const WEATHER_LABEL = { clear: "맑음", cloudy: "흐림", rain: "비", snow: "눈" };
+const WEATHER_VALUES = {
+  clear: "강수 0 · 적설 0", cloudy: "강수 0 · 적설 0 (비용은 맑음과 동일)",
+  rain: "강수 2mm", snow: "적설 1cm (기상강도 5)",
+};
+
+// ---- 상태 ----
+const state = {
+  phase: "waiting_origin", // waiting_origin | waiting_destination | ready | loading | displayed | error
+  origin: null,            // {lng, lat}
+  stop: null,              // {stop_id, name}
+  weather: "clear",
+  requestToken: 0,         // 늦게 도착한 응답 무시
+  result: null,            // 최신 응답
+  prevWeatherResult: null, // 직전 날씨 응답 (경로 변화 배지용)
+};
+
+// ---- 지도 ----
+const map = new maplibregl.Map({
+  container: "map",
+  style: {
+    version: 8,
+    sources: {
+      osm: {
+        type: "raster",
+        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        tileSize: 256,
+        attribution: "© OpenStreetMap contributors",
+      },
+    },
+    layers: [{ id: "osm", type: "raster", source: "osm" }],
+  },
+  center: SEOUL_CENTER,
+  zoom: 11,
+  attributionControl: { compact: false },
+});
+map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+let originMarker = null;
+
+// 경사 → 색 (0%=초록, 15%=주황, 30%+=빨강 선형 보간)
+function gradeColor(g) {
+  const t = Math.min(Math.abs(g), 30);
+  const lerp = (a, b, u) => Math.round(a + (b - a) * u);
+  const hex = (r, gg, b) => `rgb(${r},${gg},${b})`;
+  const GREEN = [46, 125, 50], ORANGE = [249, 168, 37], RED = [198, 40, 40];
+  if (t <= 15) {
+    const u = t / 15;
+    return hex(lerp(GREEN[0], ORANGE[0], u), lerp(GREEN[1], ORANGE[1], u), lerp(GREEN[2], ORANGE[2], u));
+  }
+  const u = (t - 15) / 15;
+  return hex(lerp(ORANGE[0], RED[0], u), lerp(ORANGE[1], RED[1], u), lerp(ORANGE[2], RED[2], u));
+}
+
+map.on("load", async () => {
+  // 소스
+  map.addSource("stops", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addSource("selected-stop", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addSource("m0-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addSource("m3-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addSource("snap-lines", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+
+  // 정류장 (줌 13부터)
+  map.addLayer({
+    id: "stops", type: "circle", source: "stops", minzoom: 13,
+    paint: {
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 3, 16, 6],
+      "circle-color": ["match", ["get", "kind"], "지하철", "#2563eb", "#f59e0b"],
+      "circle-stroke-color": "#fff", "circle-stroke-width": 1,
+    },
+  });
+  map.addLayer({
+    id: "selected-stop", type: "circle", source: "selected-stop",
+    paint: { "circle-radius": 9, "circle-color": "#c62828", "circle-stroke-color": "#fff", "circle-stroke-width": 2.5 },
+  });
+
+  // 스냅 연결선
+  map.addLayer({
+    id: "snap-lines", type: "line", source: "snap-lines",
+    paint: { "line-color": "#9aa2ad", "line-width": 1.5, "line-dasharray": [1, 1.5] },
+  });
+
+  // M0: 흰 casing + 회색 점선
+  map.addLayer({
+    id: "m0-casing", type: "line", source: "m0-route",
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: { "line-color": "#fff", "line-width": 7 },
+  });
+  map.addLayer({
+    id: "m0-line", type: "line", source: "m0-route",
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: { "line-color": "#5f6b7a", "line-width": 3.5, "line-dasharray": [1.6, 1.6] },
+  });
+
+  // M3: 흰 casing + 세그먼트별 경사색 실선
+  map.addLayer({
+    id: "m3-casing", type: "line", source: "m3-route",
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: { "line-color": "#fff", "line-width": 9 },
+  });
+  map.addLayer({
+    id: "m3-line", type: "line", source: "m3-route",
+    layout: { "line-cap": "round", "line-join": "round" },
+    paint: { "line-color": ["get", "color"], "line-width": 5 },
+  });
+
+  // 정류장 로드
+  try {
+    const res = await fetch("/api/stops");
+    map.getSource("stops").setData(await res.json());
+  } catch {
+    showError("정류장 목록을 불러오지 못했습니다. API 서버(포트 8000)가 실행 중인지 확인하세요.");
+  }
+
+  // 정류장 클릭 = 도착지 선택
+  map.on("click", "stops", (e) => {
+    if (!["waiting_destination", "ready", "displayed", "error"].includes(state.phase)) return;
+    if (state.phase !== "waiting_destination" && state.stop) return; // 변경 버튼을 통해서만 재선택
+    const f = e.originalEvent._stopHandled = e.features[0];
+    selectStop({ stop_id: f.properties.stop_id, name: f.properties.name }, f.geometry.coordinates);
+  });
+  map.on("mouseenter", "stops", () => (map.getCanvas().style.cursor = "pointer"));
+  map.on("mouseleave", "stops", () => (map.getCanvas().style.cursor = ""));
+
+  // 지면 클릭
+  map.on("click", (e) => {
+    if (e.originalEvent._stopHandled) return; // 정류장 클릭이 이미 처리
+    if (state.phase === "waiting_origin") {
+      setOrigin([e.lngLat.lng, e.lngLat.lat]);
+    } else if (state.phase === "waiting_destination") {
+      hint("도착지는 정류장 마커를 클릭해 선택하세요.");
+    }
+  });
+});
+
+// ---- 상태 전이 ----
+function setOrigin(lnglat) {
+  state.origin = { lng: lnglat[0], lat: lnglat[1] };
+  if (originMarker) originMarker.remove();
+  originMarker = new maplibregl.Marker({ color: "#1d4ed8" }).setLngLat(lnglat).addTo(map);
+  document.getElementById("origin-label").textContent =
+    `출발지 (${lnglat[0].toFixed(5)}, ${lnglat[1].toFixed(5)})`;
+  document.getElementById("edit-origin").hidden = false;
+  state.phase = state.stop ? "ready" : "waiting_destination";
+  hint(state.stop ? "" : "정류장 마커를 클릭해 도착지를 정하세요. (줌 13부터 표시)");
+  maybeRoute();
+}
+
+function selectStop(stop, coords) {
+  state.stop = stop;
+  document.getElementById("dest-label").textContent = `${stop.name} (${stop.stop_id.split(":")[0] === "subway" ? "지하철" : "버스"})`;
+  document.getElementById("edit-dest").hidden = false;
+  if (coords) {
+    map.getSource("selected-stop").setData({
+      type: "FeatureCollection",
+      features: [{ type: "Feature", geometry: { type: "Point", coordinates: coords }, properties: {} }],
+    });
+  }
+  state.phase = state.origin ? "ready" : "waiting_origin";
+  hint(state.origin ? "" : "지도를 클릭해 출발지를 정하세요.");
+  maybeRoute();
+}
+
+function maybeRoute() {
+  updateButtons();
+  if (state.origin && state.stop) requestRoute({ resetPrev: true });
+}
+
+// ---- API ----
+async function requestRoute({ resetPrev = false } = {}) {
+  const token = ++state.requestToken;
+  state.phase = "loading";
+  document.getElementById("spinner").hidden = false;
+  document.getElementById("error-box").hidden = true;
+  try {
+    const res = await fetch("/api/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        origin: state.origin,
+        destination: { stop_id: state.stop.stop_id },
+        weather: state.weather,
+      }),
+    });
+    if (token !== state.requestToken) return; // 최신 요청만 반영
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const detail = body && body.detail;
+      const msg = detail && detail.message
+        ? detail.message
+        : (Array.isArray(detail) ? "입력값이 올바르지 않습니다." : "서버 오류가 발생했습니다.");
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    if (token !== state.requestToken) return;
+    if (resetPrev) state.prevWeatherResult = null;
+    render(data);
+  } catch (err) {
+    if (token !== state.requestToken) return;
+    state.phase = "error";
+    showError(err.message || "요청에 실패했습니다.");
+  } finally {
+    if (token === state.requestToken) document.getElementById("spinner").hidden = true;
+  }
+}
+
+// ---- 렌더 ----
+function fmtM(v) { return `${v.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}m`; }
+
+function render(data) {
+  const prev = state.result;
+  state.prevWeatherResult = prev;
+  state.result = data;
+  state.phase = "displayed";
+
+  // 경로 지오메트리
+  map.getSource("m0-route").setData({
+    type: "FeatureCollection",
+    features: [{ type: "Feature", geometry: { type: "LineString", coordinates: data.m0.geometry }, properties: {} }],
+  });
+  map.getSource("m3-route").setData({
+    type: "FeatureCollection",
+    features: data.m3.segments.map((s) => ({
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: s.geometry },
+      properties: { color: gradeColor(s.grade_abs_percent), grade: s.grade_abs_percent },
+    })),
+  });
+  // 스냅 연결선 (입력점 → 스냅 노드)
+  map.getSource("snap-lines").setData({
+    type: "FeatureCollection",
+    features: [{
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [state.origin.lng, state.origin.lat],
+          [data.snapping.origin.node_lng, data.snapping.origin.node_lat],
+        ],
+      },
+      properties: {},
+    }],
+  });
+
+  // 경로 전체가 보이도록
+  const all = data.m0.geometry.concat(...data.m3.segments.map((s) => s.geometry));
+  const b = all.reduce(
+    (acc, c) => [Math.min(acc[0], c[0]), Math.min(acc[1], c[1]), Math.max(acc[2], c[0]), Math.max(acc[3], c[1])],
+    [Infinity, Infinity, -Infinity, -Infinity],
+  );
+  map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 80, maxZoom: 16.5 });
+
+  // 결과 카드
+  document.getElementById("result").hidden = false;
+  const verdict = document.getElementById("verdict");
+  const st = data.comparison.threshold_status;
+  verdict.className = `verdict ${st}`;
+  verdict.textContent =
+    st === "reclassified" ? "부담 반영 후 400m 초과 — 현행 기준으로는 양호로 분류되는 지점"
+    : st === "within" ? "400m 이내 유지"
+    : "두 기준 모두 400m 초과";
+
+  // 날씨로 경로가 바뀌었는지 (직전 결과와 비교)
+  const badge = document.getElementById("reroute-badge");
+  if (prev && JSON.stringify(prev.m3.edge_ids) !== JSON.stringify(data.m3.edge_ids)) {
+    const diff = (data.m3.equivalent_distance_m - prev.m3.equivalent_distance_m).toFixed(1);
+    badge.textContent = `날씨(${WEATHER_LABEL[state.weather]})로 부담 최소경로가 바뀌었습니다 (부담 ${diff > 0 ? "+" : ""}${diff}m)`;
+    badge.hidden = false;
+  } else {
+    badge.hidden = true;
+  }
+
+  document.getElementById("cmp-m0").textContent = fmtM(data.m0.network_distance_m);
+  document.getElementById("cmp-m3-phys").textContent = fmtM(data.m3.physical_distance_m);
+  document.getElementById("cmp-m3-eq").textContent = fmtM(data.m3.equivalent_distance_m);
+  document.getElementById("cmp-detour").textContent = data.comparison.path_changed
+    ? `+${data.comparison.detour_m}m (+${data.comparison.detour_percent}%)`
+    : "동일 경로, 비용만 증가";
+
+  const bd = data.breakdown;
+  document.getElementById("bd-physical").textContent = fmtM(bd.physical_m);
+  document.getElementById("bd-slope").textContent = `+${fmtM(bd.slope_m)}`;
+  document.getElementById("bd-weather").textContent = `+${fmtM(bd.weather_m)}`;
+  document.getElementById("bd-interaction").textContent = `+${fmtM(bd.interaction_m)}`;
+  document.getElementById("bd-total").textContent = fmtM(bd.total_m);
+
+  document.getElementById("snap-info").textContent =
+    `스냅거리 — 출발 ${data.snapping.origin.snap_m}m · 도착 ${data.snapping.destination.snap_m}m`;
+  document.getElementById("model-info").textContent =
+    `적용 날씨: ${WEATHER_LABEL[state.weather]} (${WEATHER_VALUES[state.weather]})`;
+  updateButtons();
+}
+
+function showError(msg) {
+  const box = document.getElementById("error-box");
+  box.textContent = msg;
+  box.hidden = false;
+}
+
+function hint(msg) { document.getElementById("hint").textContent = msg; }
+
+function updateButtons() {
+  document.getElementById("swap").disabled = !(state.origin && state.stop);
+}
+
+// ---- 컨트롤 ----
+document.querySelectorAll(".weather-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".weather-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.weather = btn.dataset.weather;
+    document.getElementById("weather-note").hidden = state.weather !== "cloudy";
+    if (state.origin && state.stop) requestRoute(); // 직전 결과 보관 → 경로 변화 배지
+  });
+});
+
+document.getElementById("edit-origin").addEventListener("click", () => {
+  state.phase = "waiting_origin";
+  hint("지도를 클릭해 출발지를 다시 정하세요.");
+});
+document.getElementById("edit-dest").addEventListener("click", () => {
+  state.stop = null;
+  state.phase = "waiting_destination";
+  document.getElementById("dest-label").textContent = "정류장 마커를 클릭해 도착지를 정하세요";
+  hint("정류장 마커를 클릭해 도착지를 다시 정하세요. (줌 13부터 표시)");
+});
+
+document.getElementById("swap").addEventListener("click", () => {
+  // 도착지(정류장) 위치가 새 출발지가 되고, 도착지는 다시 선택 (O는 자유점, D는 정류장 제약)
+  const sel = map.getSource("selected-stop")._data;
+  if (!sel || !sel.features.length) return;
+  const coords = sel.features[0].geometry.coordinates;
+  state.stop = null;
+  document.getElementById("dest-label").textContent = "정류장 마커를 클릭해 도착지를 정하세요";
+  map.getSource("selected-stop").setData({ type: "FeatureCollection", features: [] });
+  setOrigin(coords);
+  hint("교환: 이전 도착 정류장이 출발지가 되었습니다. 새 도착 정류장을 클릭하세요.");
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  state.origin = null; state.stop = null; state.result = null; state.prevWeatherResult = null;
+  state.phase = "waiting_origin";
+  state.requestToken++;
+  if (originMarker) { originMarker.remove(); originMarker = null; }
+  ["m0-route", "m3-route", "snap-lines", "selected-stop"].forEach((s) =>
+    map.getSource(s)?.setData({ type: "FeatureCollection", features: [] }));
+  document.getElementById("result").hidden = true;
+  document.getElementById("error-box").hidden = true;
+  document.getElementById("origin-label").textContent = "지도를 클릭해 출발지를 정하세요";
+  document.getElementById("dest-label").textContent = "정류장 마커를 클릭해 도착지를 정하세요";
+  document.getElementById("edit-origin").hidden = true;
+  document.getElementById("edit-dest").hidden = true;
+  hint("");
+  updateButtons();
+});
+
+// 레이어 토글
+const toggles = [["toggle-m0", ["m0-casing", "m0-line"]], ["toggle-m3", ["m3-casing", "m3-line"]], ["toggle-stops", ["stops"]]];
+toggles.forEach(([id, layers]) => {
+  document.getElementById(id).addEventListener("change", (e) => {
+    layers.forEach((l) =>
+      map.getLayer(l) && map.setLayoutProperty(l, "visibility", e.target.checked ? "visible" : "none"));
+  });
+});
+
+// ---- 대표 사례 ----
+const demoBox = document.getElementById("demo-buttons");
+const demoCases = (demoDoc && demoDoc.cases) || [];
+if (!demoCases.length) {
+  demoBox.innerHTML = '<p class="hint">대표 사례가 아직 없습니다 (단계 6에서 채워짐).</p>';
+} else {
+  demoCases.forEach((c) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = c.title;
+    btn.title = c.description;
+    btn.addEventListener("click", () => {
+      state.weather = c.weather;
+      document.querySelectorAll(".weather-btn").forEach((b) =>
+        b.classList.toggle("active", b.dataset.weather === c.weather));
+      document.getElementById("weather-note").hidden = c.weather !== "cloudy";
+      // 정류장 좌표는 stops 소스에서 찾는다
+      const src = map.getSource("stops");
+      let coords = null, name = c.stop_id;
+      if (src && src._data && src._data.features) {
+        const f = src._data.features.find((x) => x.properties.stop_id === c.stop_id);
+        if (f) { coords = f.geometry.coordinates; name = f.properties.name; }
+      }
+      state.stop = { stop_id: c.stop_id, name };
+      document.getElementById("dest-label").textContent = name;
+      document.getElementById("edit-dest").hidden = false;
+      if (coords) {
+        map.getSource("selected-stop").setData({
+          type: "FeatureCollection",
+          features: [{ type: "Feature", geometry: { type: "Point", coordinates: coords }, properties: {} }],
+        });
+      }
+      setOrigin([c.origin.lng, c.origin.lat]);
+    });
+    demoBox.appendChild(btn);
+  });
+}

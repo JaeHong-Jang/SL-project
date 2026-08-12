@@ -1,6 +1,98 @@
-/* 단계 5에서 구현. 빌드 파이프라인 검증용 최소 스타일. */
+/* 보행부담 경로 프로토타입 — docs/prototype_plan.md v2 §4 */
+
+:root {
+  --green: #2e7d32;
+  --orange: #f9a825;
+  --red: #c62828;
+  --gray: #6b7280;
+  --panel-w: 340px;
+}
+
+* { box-sizing: border-box; }
 html, body, #app { height: 100%; margin: 0; }
-#app { display: flex; }
-#panel { width: 320px; padding: 16px; font-family: system-ui, sans-serif; }
-#map { flex: 1; background: #e8ecef; }
-.placeholder { color: #667; }
+body { font-family: "Pretendard", "Malgun Gothic", system-ui, sans-serif; font-size: 14px; color: #1f2430; }
+#app { display: flex; position: relative; }
+
+/* ---- 왼쪽 패널 ---- */
+#panel {
+  width: var(--panel-w);
+  min-width: var(--panel-w);
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+  background: #fff;
+  border-right: 1px solid #e3e6ea;
+  z-index: 5;
+}
+#panel h1 { font-size: 17px; margin: 0 0 2px; }
+#panel h2 { font-size: 13px; margin: 14px 0 6px; color: #374151; }
+.subtitle { margin: 0 0 12px; color: var(--gray); font-size: 12.5px; }
+section { margin-bottom: 4px; }
+label { display: block; margin: 3px 0; }
+
+.od-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.od-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.origin-dot { background: #1d4ed8; }
+.dest-dot { background: var(--red); }
+.od-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-row { display: flex; gap: 8px; margin-top: 6px; }
+button {
+  font: inherit; padding: 6px 10px; border: 1px solid #cbd2d9; border-radius: 6px;
+  background: #f8fafc; cursor: pointer;
+}
+button:hover:not(:disabled) { background: #eef2f6; }
+button:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 1px; }
+button:disabled { opacity: 0.45; cursor: default; }
+
+.weather-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.weather-btn.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+
+.hint { color: var(--gray); font-size: 12px; margin: 6px 0; }
+
+/* ---- 결과 카드 ---- */
+.verdict {
+  padding: 10px 12px; border-radius: 8px; font-weight: 700; margin: 8px 0;
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+}
+.verdict.reclassified { background: #fef2f2; border-color: var(--red); color: var(--red); font-size: 15px; }
+.verdict.within { background: #f0fdf4; border-color: var(--green); color: var(--green); }
+.verdict.both_over { background: #fff7ed; border-color: #ea580c; color: #9a3412; }
+.badge {
+  display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px;
+  background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; margin-bottom: 6px;
+}
+.cmp { width: 100%; border-collapse: collapse; }
+.cmp th { text-align: left; font-weight: 500; color: #4b5563; padding: 3px 0; width: 60%; }
+.cmp td { text-align: right; font-variant-numeric: tabular-nums; }
+.cmp tr.total th, .cmp tr.total td { border-top: 1px solid #e2e8f0; font-weight: 700; padding-top: 5px; }
+
+.error {
+  background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+  padding: 10px; border-radius: 8px; margin: 8px 0;
+}
+.spinner { color: var(--gray); padding: 8px 0; }
+
+.demo-col { display: flex; flex-direction: column; gap: 6px; }
+.demo-col button { text-align: left; }
+
+footer { border-top: 1px solid #e5e7eb; margin-top: 12px; padding-top: 8px; }
+
+/* ---- 지도 ---- */
+#map { flex: 1; min-width: 0; }
+
+/* ---- 범례 (좌하단, 지도 위) ---- */
+#legend {
+  position: absolute; left: calc(var(--panel-w) + 14px); bottom: 22px; z-index: 4;
+  background: rgba(255, 255, 255, 0.94); border: 1px solid #d7dbe0; border-radius: 8px;
+  padding: 8px 10px; width: 170px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.legend-title { font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+.legend-bar {
+  height: 10px; border-radius: 4px;
+  background: linear-gradient(to right, var(--green), var(--orange), var(--red));
+}
+.legend-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); margin-top: 3px; }
+
+@media (max-width: 1100px) {
+  :root { --panel-w: 300px; }
+}
