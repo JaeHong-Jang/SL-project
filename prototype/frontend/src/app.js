@@ -70,7 +70,96 @@ function setDestPin(coords) {
   if (coords) {
     destMarker = new maplibregl.Marker({ element: makePin("도", "#ef4444"), anchor: "bottom" })
       .setLngLat(coords).addTo(map);
+  } else {
+    // 도착지가 사라지면 법정 버퍼·라벨도 지운다
+    try { map.getSource("legal")?.setData({ type: "FeatureCollection", features: [] }); } catch { /* 지도 로드 전 */ }
+    setLegalLabel(null, false);
   }
+}
+
+let legalLabelMarker = null;
+function setLegalLabel(coords, over) {
+  if (legalLabelMarker) legalLabelMarker.remove();
+  legalLabelMarker = null;
+  if (!coords) return;
+  const el = document.createElement("div");
+  el.className = "legal-label" + (over ? " over" : "");
+  el.textContent = "법정 기준 400m";
+  legalLabelMarker = new maplibregl.Marker({ element: el, anchor: "bottom" })
+    .setLngLat(coords).addTo(map);
+  if (!document.getElementById("toggle-legal").checked) el.style.display = "none";
+}
+
+// ---- 날씨 효과 (구름 오버레이 + 비/눈 캔버스 애니메이션) ----
+const wxOverlay = document.getElementById("weather-overlay");
+const wxCanvas = document.getElementById("weather-canvas");
+const wxCtx = wxCanvas.getContext("2d");
+let wxRAF = null;
+let wxDrops = [];
+
+function wxResize() {
+  wxCanvas.width = wxCanvas.clientWidth;
+  wxCanvas.height = wxCanvas.clientHeight;
+}
+window.addEventListener("resize", wxResize);
+
+function wxSpawn(kind, anywhere) {
+  const w = wxCanvas.width, h = wxCanvas.height;
+  if (kind === "rain") {
+    return { x: Math.random() * (w + 60) - 30, y: anywhere ? Math.random() * h : -20,
+             len: 9 + Math.random() * 8, sp: 11 + Math.random() * 6 };
+  }
+  return { x: Math.random() * w, y: anywhere ? Math.random() * h : -8,
+           r: 1.6 + Math.random() * 2.2, sp: 0.9 + Math.random() * 1.1, ph: Math.random() * Math.PI * 2 };
+}
+
+function wxStop() {
+  if (wxRAF) cancelAnimationFrame(wxRAF);
+  wxRAF = null;
+  wxDrops = [];
+  wxCtx.clearRect(0, 0, wxCanvas.width, wxCanvas.height);
+}
+
+function wxStart(kind) {
+  wxResize();
+  wxDrops = Array.from({ length: kind === "rain" ? 170 : 130 }, () => wxSpawn(kind, true));
+  const step = () => {
+    const w = wxCanvas.width, h = wxCanvas.height;
+    wxCtx.clearRect(0, 0, w, h);
+    if (kind === "rain") {
+      wxCtx.strokeStyle = "rgba(96, 118, 145, 0.55)";
+      wxCtx.lineWidth = 1.2;
+      wxCtx.beginPath();
+      for (const d of wxDrops) {
+        wxCtx.moveTo(d.x, d.y);
+        wxCtx.lineTo(d.x + 2.4, d.y + d.len);
+        d.x += 1.8; d.y += d.sp;
+        if (d.y > h + 20) Object.assign(d, wxSpawn(kind, false));
+      }
+      wxCtx.stroke();
+    } else {
+      wxCtx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      wxCtx.strokeStyle = "rgba(120, 138, 160, 0.4)";
+      for (const d of wxDrops) {
+        wxCtx.beginPath();
+        wxCtx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        wxCtx.fill(); wxCtx.stroke();
+        d.ph += 0.02;
+        d.x += Math.sin(d.ph) * 0.7;
+        d.y += d.sp;
+        if (d.y > h + 10) Object.assign(d, wxSpawn(kind, false));
+      }
+    }
+    wxRAF = requestAnimationFrame(step);
+  };
+  step();
+}
+
+function applyWeather(w) {
+  wxOverlay.className = w === "clear" ? "" : w;
+  wxStop();
+  if (w === "rain") wxStart("rain");
+  if (w === "snow") wxStart("snow");
 }
 
 // 직선거리 (법정 기준 방식) — haversine
@@ -309,6 +398,12 @@ function render(data) {
         { type: "Feature", geometry: { type: "LineString", coordinates: [o, [d.lng, d.lat]] }, properties: {} },
       ],
     });
+    // 체감 거리가 400m를 넘으면 버퍼를 빨간색으로
+    const over = data.comparison.threshold_status !== "within";
+    const bufColor = over ? "#c62828" : "#2563eb";
+    map.setPaintProperty("legal-fill", "fill-color", bufColor);
+    map.setPaintProperty("legal-line", "line-color", bufColor);
+    setLegalLabel([d.lng, d.lat + 400 / 111320], over);
   }
   document.getElementById("cmp-straight").textContent = straightText;
 
@@ -413,6 +508,7 @@ document.querySelectorAll(".weather-btn").forEach((btn) => {
     document.querySelectorAll(".weather-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     state.weather = btn.dataset.weather;
+    applyWeather(state.weather);
     document.getElementById("weather-note").hidden = state.weather !== "cloudy";
     if (state.origin && state.stop) requestRoute(); // 직전 결과 보관 → 경로 변화 배지
   });
@@ -470,6 +566,10 @@ toggles.forEach(([id, layers]) => {
   document.getElementById(id).addEventListener("change", (e) => {
     layers.forEach((l) =>
       map.getLayer(l) && map.setLayoutProperty(l, "visibility", e.target.checked ? "visible" : "none"));
+    // 버퍼 라벨(HTML 마커)은 레이어가 아니므로 별도 처리
+    if (id === "toggle-legal" && legalLabelMarker) {
+      legalLabelMarker.getElement().style.display = e.target.checked ? "" : "none";
+    }
   });
 });
 
@@ -486,6 +586,7 @@ if (!demoCases.length) {
     btn.title = c.description;
     btn.addEventListener("click", () => {
       state.weather = c.weather;
+      applyWeather(c.weather);
       document.querySelectorAll(".weather-btn").forEach((b) =>
         b.classList.toggle("active", b.dataset.weather === c.weather));
       document.getElementById("weather-note").hidden = c.weather !== "cloudy";
