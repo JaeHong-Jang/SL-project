@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "httpx"]
+dev = ["pytest", "ruff", "httpx", "psutil"]
 prototype = ["fastapi", "uvicorn[standard]", "scipy"]
 
 [project.scripts]
