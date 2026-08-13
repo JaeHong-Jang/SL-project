@@ -210,6 +210,7 @@ Drive에서 받은 파일은 프로젝트 루트의 `data/raw/` 아래에 놓는
 
 ```
 <프로젝트 루트>/
+├── AGENTS.md               Codex/GPT 작업 지침
 ├── src/sl_accessibility/    Python 분석 하네스 (핵심 로직 전부)
 ├── configs/                 경로·파라미터·데이터소스 설정 파일
 ├── data/

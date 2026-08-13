@@ -4,6 +4,7 @@
 
 ```text
 SL 프로젝트/
+├─ AGENTS.md                       # Codex/GPT 작업 지침
 ├─ configs/                         # 경로, 데이터 소스, 모형 파라미터
 │  ├─ default.yaml
 │  ├─ data_sources.yaml
@@ -83,4 +84,5 @@ qgis/out_transit_d_candidates.gpkg
 | Python 하네스 | `src/sl_accessibility/` | 반복 가능한 계산과 검증 |
 | QGIS 작업 | `docs/qgis/`, `qgis/` | 마스크, 격자, 경사, 지도 수동 검수 |
 | 연구 문서 | `docs/methods/` | 계수, 방법론, 해석 한계 정리 |
+| Codex/GPT 지침 | `AGENTS.md` | 프로젝트를 열 때 가장 먼저 적용할 공통 작업 규칙 |
 | 프로젝트 스킬 | `skills/` | Codex가 다음 작업에서 같은 규칙을 기억하도록 하는 repo-local 지침 |

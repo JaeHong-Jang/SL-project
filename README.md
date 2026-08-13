@@ -165,6 +165,7 @@ duplicated admin name: 신사동(관악구/강남구)
 
 ```text
 configs/                 경로, 데이터 소스, 모형 파라미터
+AGENTS.md                Codex/GPT 작업 지침
 src/sl_accessibility/    Python 하네스
 scripts/                 실행용 wrapper
 tests/                   단위 테스트
