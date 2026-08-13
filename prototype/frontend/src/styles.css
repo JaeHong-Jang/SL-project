@@ -31,8 +31,15 @@ body {
   border-right: 1px solid #e3e6ea;
   z-index: 5;
 }
-#panel h1 { font-size: 17px; margin: 0 0 2px; }
+#panel h1 { font-size: 17px; line-height: 1.4; margin: 0 0 4px; }
 #panel h2 { font-size: 13px; margin: 0 0 8px; color: #374151; }
+.team-name {
+  margin: 0 0 3px;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
 .subtitle { margin: 0 0 4px; color: var(--gray); font-size: 12.5px; }
 #panel section { margin: 0 0 16px; padding-top: 14px; border-top: 1px solid #eef1f4; }
 #panel section:first-of-type { border-top: none; padding-top: 4px; }
